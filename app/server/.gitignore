@@ -66,3 +66,4 @@ ormlogs.log
 # Misc
 .DS_Store
 Thumbs.db
+.env

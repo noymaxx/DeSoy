@@ -1,8 +1,8 @@
 # =============================================
-# Rural Credit DeFi Platform - Task Runner
+# DeLaSoja Platform - Task Runner
 # =============================================
 # This justfile contains all the commands needed to develop,
-# build, and deploy the Rural Credit DeFi platform.
+# build, and deploy the DeLaSoja platform.
 # 
 # Usage:
 #   just             -> Show this list of commands
