@@ -1,52 +1,79 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Menu, X, Wallet, User, LogOut, Settings, PlusCircle, BarChart3, ChevronDown } from "lucide-react"
+} from "@/components/ui/dropdown-menu";
+import {
+  Menu,
+  X,
+  Wallet,
+  User,
+  LogOut,
+  Settings,
+  PlusCircle,
+  BarChart3,
+  ChevronDown,
+} from "lucide-react";
 
 export default function DashboardHeader() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [connectedWallet] = useState("0x1234...5678") // Mock wallet address
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [connectedWallet] = useState("0x1234...5678"); // Mock wallet address
 
   const handleDisconnect = () => {
     // Handle wallet disconnection
-    console.log("Disconnecting wallet...")
-  }
+    console.log("Disconnecting wallet...");
+  };
 
   const handleSwitchUser = () => {
     // Handle user switching
-    console.log("Switching user...")
-  }
+    console.log("Switching user...");
+  };
 
   return (
     <header className="bg-black/95 backdrop-blur-md border-b border-yellow-500/30 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center">
-            <Image src="/images/desoy-logo.png" alt="deSoy Logo" width={40} height={40} className="w-10 h-10" />
+            <Image
+              src="/images/desoy-logo.png"
+              alt="deSoy Logo"
+              width={146}
+              height={44}
+            />
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/marketplace" className="text-gray-100 hover:text-yellow-400 transition-colors">
+            <Link
+              href="/marketplace"
+              className="text-gray-100 hover:text-yellow-400 transition-colors"
+            >
               Marketplace
             </Link>
-            <Link href="/tokenize" className="text-gray-100 hover:text-yellow-400 transition-colors">
+            <Link
+              href="/tokenize"
+              className="text-gray-100 hover:text-yellow-400 transition-colors"
+            >
               Tokenize
             </Link>
-            <Link href="/portfolio" className="text-gray-100 hover:text-yellow-400 transition-colors">
+            <Link
+              href="/portfolio"
+              className="text-gray-100 hover:text-yellow-400 transition-colors"
+            >
               Portfolio
             </Link>
-            <Link href="/governance" className="text-gray-100 hover:text-yellow-400 transition-colors">
+            <Link
+              href="/governance"
+              className="text-gray-100 hover:text-yellow-400 transition-colors"
+            >
               Governance
             </Link>
           </nav>
@@ -68,7 +95,10 @@ export default function DashboardHeader() {
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                <Button
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
                   <Wallet className="w-4 h-4 mr-2" />
                   {connectedWallet}
                   <ChevronDown className="w-4 h-4 ml-2" />
@@ -88,11 +118,17 @@ export default function DashboardHeader() {
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-gray-700" />
-                <DropdownMenuItem onClick={handleSwitchUser} className="hover:bg-gray-700">
+                <DropdownMenuItem
+                  onClick={handleSwitchUser}
+                  className="hover:bg-gray-700"
+                >
                   <Wallet className="w-4 h-4 mr-2" />
                   Switch Wallet
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDisconnect} className="hover:bg-gray-700 text-red-400">
+                <DropdownMenuItem
+                  onClick={handleDisconnect}
+                  className="hover:bg-gray-700 text-red-400"
+                >
                   <LogOut className="w-4 h-4 mr-2" />
                   Disconnect
                 </DropdownMenuItem>
@@ -101,8 +137,15 @@ export default function DashboardHeader() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden text-white" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <button
+            className="md:hidden text-white"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
 
@@ -110,20 +153,34 @@ export default function DashboardHeader() {
         {isMobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t border-yellow-500/30">
             <nav className="flex flex-col space-y-4 mt-4">
-              <Link href="/marketplace" className="text-gray-100 hover:text-yellow-400 transition-colors">
+              <Link
+                href="/marketplace"
+                className="text-gray-100 hover:text-yellow-400 transition-colors"
+              >
                 Marketplace
               </Link>
-              <Link href="/tokenize" className="text-gray-100 hover:text-yellow-400 transition-colors">
+              <Link
+                href="/tokenize"
+                className="text-gray-100 hover:text-yellow-400 transition-colors"
+              >
                 Tokenize
               </Link>
-              <Link href="/portfolio" className="text-gray-100 hover:text-yellow-400 transition-colors">
+              <Link
+                href="/portfolio"
+                className="text-gray-100 hover:text-yellow-400 transition-colors"
+              >
                 Portfolio
               </Link>
-              <Link href="/governance" className="text-gray-100 hover:text-yellow-400 transition-colors">
+              <Link
+                href="/governance"
+                className="text-gray-100 hover:text-yellow-400 transition-colors"
+              >
                 Governance
               </Link>
               <div className="pt-4 border-t border-gray-700">
-                <div className="text-gray-400 text-sm mb-2">Connected: {connectedWallet}</div>
+                <div className="text-gray-400 text-sm mb-2">
+                  Connected: {connectedWallet}
+                </div>
                 <div className="space-y-2">
                   <Button
                     size="sm"
@@ -159,5 +216,5 @@ export default function DashboardHeader() {
         )}
       </div>
     </header>
-  )
+  );
 }
