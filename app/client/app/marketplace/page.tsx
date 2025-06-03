@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, MapPin, Calendar, TrendingUp, Coins, Clock, CheckCircle } from "lucide-react"
 import DashboardHeader from "../components/DashboardHeader"
+import InvestmentModal from "../components/InvestmentModal"
 
 interface CropProject {
   id: string
@@ -26,7 +27,7 @@ interface CropProject {
   daysLeft: number
 }
 
-const mockProjects: CropProject[] = [
+const initialProjects: CropProject[] = [
   {
     id: "1",
     farmer: "Marko Petrović",
@@ -90,11 +91,14 @@ const mockProjects: CropProject[] = [
 ]
 
 export default function MarketplacePage() {
+  const [projects, setProjects] = useState<CropProject[]>(initialProjects)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCrop, setFilterCrop] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
+  const [selectedProject, setSelectedProject] = useState<CropProject | null>(null)
+  const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false)
 
-  const filteredProjects = mockProjects.filter((project) => {
+  const filteredProjects = projects.filter((project) => {
     const matchesSearch =
       project.farmer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -104,6 +108,28 @@ export default function MarketplacePage() {
 
     return matchesSearch && matchesCrop && matchesStatus
   })
+
+  const handleInvestClick = (project: CropProject) => {
+    setSelectedProject(project)
+    setIsInvestmentModalOpen(true)
+  }
+
+  const handleInvestmentComplete = (projectId: string, amount: number) => {
+    setProjects((prevProjects) =>
+      prevProjects.map((project) => {
+        if (project.id === projectId) {
+          const newFunded = project.funded + amount
+          const newStatus = newFunded >= project.target ? "funded" : "active"
+          return {
+            ...project,
+            funded: newFunded,
+            status: newStatus,
+          }
+        }
+        return project
+      }),
+    )
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -266,6 +292,7 @@ export default function MarketplacePage() {
                     <Button
                       className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
                       disabled={project.status !== "active"}
+                      onClick={() => handleInvestClick(project)}
                     >
                       <Coins className="w-4 h-4 mr-2" />
                       {project.status === "active"
@@ -287,6 +314,14 @@ export default function MarketplacePage() {
           )}
         </motion.div>
       </main>
+
+      {/* Investment Modal */}
+      <InvestmentModal
+        isOpen={isInvestmentModalOpen}
+        onClose={() => setIsInvestmentModalOpen(false)}
+        project={selectedProject}
+        onInvestmentComplete={handleInvestmentComplete}
+      />
     </div>
   )
 }

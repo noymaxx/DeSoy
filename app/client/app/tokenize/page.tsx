@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Upload, FileText, Save, Coins } from "lucide-react"
 import DashboardHeader from "../components/DashboardHeader"
+import TokenizeConfirmationModal from "../components/TokenizeConfirmationModal"
 
 export default function TokenizePage() {
   const [formData, setFormData] = useState({
@@ -22,6 +23,7 @@ export default function TokenizePage() {
   })
 
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([])
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -32,9 +34,32 @@ export default function TokenizePage() {
     setUploadedFiles((prev) => [...prev, `Document_${prev.length + 1}.pdf`])
   }
 
+  const handlePublishProject = () => {
+    setIsConfirmationModalOpen(true)
+  }
+
+  const handleConfirmPublication = () => {
+    // Handle the actual publication logic here
+    console.log("Project published:", formData)
+    console.log("Files:", uploadedFiles)
+
+    // Reset form after successful publication
+    setFormData({
+      cropType: "",
+      plantedArea: "",
+      expectedRevenue: "",
+      harvestDate: "",
+      location: "",
+      description: "",
+    })
+    setUploadedFiles([])
+  }
+
   const platformFee = 2.5
   const interestRate = 8.5
   const maxValue = formData.expectedRevenue ? (Number.parseFloat(formData.expectedRevenue) * 0.7).toFixed(0) : "0"
+
+  const isFormValid = formData.cropType && formData.expectedRevenue && formData.harvestDate && formData.location
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
@@ -69,7 +94,7 @@ export default function TokenizePage() {
                       <Label htmlFor="cropType" className="text-gray-200">
                         Crop Type
                       </Label>
-                      <Select onValueChange={(value) => handleInputChange("cropType", value)}>
+                      <Select onValueChange={(value) => handleInputChange("cropType", value)} value={formData.cropType}>
                         <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                           <SelectValue placeholder="Select crop type" />
                         </SelectTrigger>
@@ -213,7 +238,7 @@ export default function TokenizePage() {
                     <div className="text-xs text-gray-400 space-y-1">
                       <p>• Document will be validated by Chainlink oracles</p>
                       <p>• 70% of expected revenue available for financing</p>
-                      <p>• NFT will be created on blockchain and available for liquidation</p>
+                      <p>• Project will be published and available for investment</p>
                     </div>
                   </div>
 
@@ -224,10 +249,11 @@ export default function TokenizePage() {
                     </Button>
                     <Button
                       className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                      disabled={!formData.cropType || !formData.expectedRevenue}
+                      disabled={!isFormValid}
+                      onClick={handlePublishProject}
                     >
                       <Coins className="w-4 h-4 mr-2" />
-                      Create NFT
+                      Publish Project
                     </Button>
                   </div>
                 </CardContent>
@@ -236,6 +262,15 @@ export default function TokenizePage() {
           </div>
         </motion.div>
       </main>
+
+      {/* Confirmation Modal */}
+      <TokenizeConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={() => setIsConfirmationModalOpen(false)}
+        formData={formData}
+        uploadedFiles={uploadedFiles}
+        onConfirm={handleConfirmPublication}
+      />
     </div>
   )
 }
