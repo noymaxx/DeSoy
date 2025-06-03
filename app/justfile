@@ -1,0 +1,246 @@
+# =============================================
+# Rural Credit DeFi Platform - Task Runner
+# =============================================
+# This justfile contains all the commands needed to develop,
+# build, and deploy the Rural Credit DeFi platform.
+# 
+# Usage:
+#   just             -> Show this list of commands
+#   just <command>   -> Run a specific command
+# =============================================
+
+# Display all available commands with descriptions
+default:
+    @just --list
+
+# =============================================
+# Environment Configuration
+# =============================================
+# Set default environment to development if not specified
+export NODE_ENV := env_var_or_default("NODE_ENV", "development")
+
+# =============================================
+# Docker Compose Management
+# =============================================
+# Start all containers in detached mode
+compose-up:
+    docker-compose up -d
+
+# Stop all running containers
+compose-down:
+    docker-compose down
+
+# Display and follow container logs
+compose-logs:
+    docker-compose logs -f
+
+# Complete cleanup of containers, volumes, and orphaned containers
+compose-clean:
+    docker-compose down -v --remove-orphans
+
+# =============================================
+# Backend Development
+# =============================================
+# Install backend dependencies
+backend-install:
+    cd server && npm install
+
+# Start backend in development mode with hot-reload
+backend-dev:
+    cd server && npm run dev
+
+# Create production build of backend
+backend-build:
+    cd server && npm run build
+
+# Start backend in production mode
+backend-start:
+    cd server && npm start
+
+# Run backend test suite
+backend-test:
+    cd server && npm test
+
+# Check backend code for style issues
+backend-lint:
+    cd server && npm run lint
+
+# Automatically fix backend style issues where possible
+backend-lint-fix:
+    cd server && npm run lint:fix
+
+# =============================================
+# Frontend Development
+# =============================================
+# Install frontend dependencies
+frontend-install:
+    cd client && npm install
+
+# Start frontend in development mode with hot-reload
+frontend-dev:
+    cd client && npm run dev
+
+# Create production build of frontend
+frontend-build:
+    cd client && npm run build
+
+# Start frontend in production mode
+frontend-start:
+    cd client && npm start
+
+# Run frontend test suite
+frontend-test:
+    cd client && npm test
+
+# Check frontend code for style issues
+frontend-lint:
+    cd client && npm run lint
+
+# Automatically fix frontend style issues where possible
+frontend-lint-fix:
+    cd client && npm run lint:fix
+
+# =============================================
+# Combined Development Commands
+# =============================================
+# Install all dependencies for both frontend and backend
+install-all: backend-install frontend-install
+
+# Start complete development environment
+# Runs: Docker services, backend, and frontend
+dev: compose-up
+    just backend-dev & just frontend-dev
+
+# =============================================
+# Production Commands
+# =============================================
+# Build both frontend and backend for production
+build-all: backend-build frontend-build
+
+# Start all services in production mode
+start-prod: compose-up backend-start frontend-start
+
+# =============================================
+# Cleanup Commands
+# =============================================
+# Remove all node_modules directories
+clean-modules:
+    rm -rf server/node_modules client/node_modules
+
+# Remove all build artifacts
+clean-dist:
+    rm -rf server/dist client/.next
+
+# Complete cleanup of the project
+clean-all: clean-modules clean-dist compose-clean
+
+# =============================================
+# Database Management
+# =============================================
+# Run pending database migrations
+db-migrate:
+    cd server && npm run migration:run
+
+# Revert the last applied migration
+db-migrate-revert:
+    cd server && npm run migration:revert
+
+# Generate a new migration based on entity changes
+db-generate:
+    cd server && npm run migration:generate
+
+# =============================================
+# Quality Assurance
+# =============================================
+# Run all linting and tests
+check-all: backend-lint frontend-lint backend-test frontend-test
+
+# Fix all auto-fixable style issues
+format-all: backend-lint-fix frontend-lint-fix
+
+# =============================================
+# Docker Image Management
+# =============================================
+# Build backend Docker image
+docker-build-backend:
+    docker build -t rural-credit-backend:latest ./server
+
+# Build frontend Docker image
+docker-build-frontend:
+    docker build -t rural-credit-frontend:latest ./client
+
+# Build all Docker images
+docker-build-all: docker-build-backend docker-build-frontend
+
+# =============================================
+# Deployment
+# =============================================
+# Deploy the application to production
+# Includes building and pushing Docker images
+deploy-prod: build-all docker-build-all
+    @echo "Deployment would happen here"
+
+# =============================================
+# Development Environment Setup
+# =============================================
+# Complete setup of development environment
+# Includes: installing dependencies, setting up env files,
+# starting services, and running migrations
+setup-dev: install-all
+    cp server/.env.example server/.env
+    cp client/.env.example client/.env
+    just compose-up
+    just db-migrate
+
+# =============================================
+# Monitoring and Analysis
+# =============================================
+# Monitor backend performance and metrics
+monitor-backend:
+    cd server && npm run monitor
+
+# Analyze frontend bundle size and performance
+monitor-frontend:
+    cd client && npm run analyze
+
+# =============================================
+# Type Checking
+# =============================================
+# Run TypeScript type checking on all projects
+type-check:
+    cd server && npm run type-check
+    cd client && npm run type-check
+
+# =============================================
+# Dependency Management
+# =============================================
+# Update all dependencies to their latest versions
+update-deps:
+    cd server && npm update
+    cd client && npm update
+
+# Run security audit on all dependencies
+security-audit:
+    cd server && npm audit
+    cd client && npm audit
+
+# =============================================
+# Documentation
+# =============================================
+# Generate documentation for both projects
+generate-docs:
+    cd server && npm run docs
+    cd client && npm run docs
+
+# =============================================
+# Database Backup and Restore
+# =============================================
+# Create a backup of the database
+backup-db:
+    @echo "Creating database backup..."
+    docker-compose exec postgres pg_dump -U postgres rural_credit > backup.sql
+
+# Restore database from a backup file
+restore-db backup_file:
+    @echo "Restoring database from {{backup_file}}..."
+    docker-compose exec -T postgres psql -U postgres rural_credit < {{backup_file}}

@@ -169,3 +169,235 @@ Producer must provide one of the following:
 - API response time < 200ms
 - Support for minimum 1000 concurrent users
 - Scalable infrastructure design
+
+## 📡 API Endpoints Specification
+
+### Authentication Endpoints
+```
+POST /api/v1/auth/register
+- Register new user (producer/investor)
+- Required fields: email, password, role, wallet_address
+- Returns: user_id, auth_token
+
+POST /api/v1/auth/login
+- User login
+- Required fields: email, password
+- Returns: auth_token, user_data
+
+POST /api/v1/auth/verify-civic
+- Verify user identity with Civic
+- Required fields: civic_token
+- Returns: verification_status, civic_identity_data
+```
+
+### User Management Endpoints
+```
+GET /api/v1/users/profile
+- Get user profile information
+- Headers: Authorization
+- Returns: user_profile_data
+
+PUT /api/v1/users/profile
+- Update user profile
+- Headers: Authorization
+- Required fields: profile_data
+- Returns: updated_profile
+
+GET /api/v1/users/reputation
+- Get user reputation score
+- Headers: Authorization
+- Returns: reputation_score, history
+```
+
+### Asset Management Endpoints
+```
+POST /api/v1/assets/register
+- Register new agricultural asset
+- Headers: Authorization
+- Required fields: asset_type, quantity, expected_delivery_date, price_per_unit
+- Returns: asset_id, token_contract_address
+
+GET /api/v1/assets
+- List all assets (with filters)
+- Query params: status, asset_type, date_range
+- Returns: paginated_assets_list
+
+GET /api/v1/assets/{asset_id}
+- Get specific asset details
+- Returns: detailed_asset_info
+
+PUT /api/v1/assets/{asset_id}
+- Update asset information
+- Headers: Authorization
+- Required fields: updated_asset_data
+- Returns: updated_asset
+```
+
+### Token Management Endpoints
+```
+POST /api/v1/tokens/mint
+- Mint new tokens for an asset
+- Headers: Authorization
+- Required fields: asset_id, quantity
+- Returns: transaction_hash, token_details
+
+GET /api/v1/tokens/balance
+- Get token balance for user
+- Headers: Authorization
+- Returns: token_balances
+
+POST /api/v1/tokens/transfer
+- Transfer tokens between users
+- Headers: Authorization
+- Required fields: recipient_address, token_id, amount
+- Returns: transaction_hash
+```
+
+### Market Data Endpoints
+```
+GET /api/v1/market/prices
+- Get current market prices
+- Query params: asset_type, date_range
+- Returns: price_data
+
+GET /api/v1/market/analytics
+- Get market analytics
+- Query params: metric_type, date_range
+- Returns: analytics_data
+
+GET /api/v1/market/orders
+- Get order book
+- Query params: asset_id, order_type
+- Returns: order_book_data
+```
+
+### Transaction Endpoints
+```
+POST /api/v1/transactions/create
+- Create new transaction
+- Headers: Authorization
+- Required fields: asset_id, quantity, price
+- Returns: transaction_id
+
+GET /api/v1/transactions
+- List user transactions
+- Headers: Authorization
+- Query params: status, date_range
+- Returns: transactions_list
+
+GET /api/v1/transactions/{transaction_id}
+- Get transaction details
+- Headers: Authorization
+- Returns: detailed_transaction_info
+```
+
+### Smart Contract Integration Endpoints
+```
+POST /api/v1/contracts/deploy
+- Deploy new smart contract
+- Headers: Authorization
+- Required fields: contract_type, parameters
+- Returns: contract_address
+
+POST /api/v1/contracts/interact
+- Interact with deployed contract
+- Headers: Authorization
+- Required fields: contract_address, function_name, parameters
+- Returns: transaction_hash
+
+GET /api/v1/contracts/events
+- Get contract events
+- Query params: contract_address, event_type
+- Returns: contract_events
+```
+
+### Oracle Data Endpoints
+```
+GET /api/v1/oracle/weather
+- Get weather data for location
+- Query params: location, date_range
+- Returns: weather_data
+
+GET /api/v1/oracle/commodity-prices
+- Get commodity prices from oracle
+- Query params: commodity_type
+- Returns: price_data
+
+POST /api/v1/oracle/delivery-confirmation
+- Confirm delivery through oracle
+- Headers: Authorization
+- Required fields: delivery_id, confirmation_data
+- Returns: confirmation_status
+```
+
+### Reporting Endpoints
+```
+GET /api/v1/reports/transactions
+- Generate transaction report
+- Headers: Authorization
+- Query params: date_range, report_type
+- Returns: report_data
+
+GET /api/v1/reports/audit
+- Generate audit report
+- Headers: Authorization
+- Query params: date_range, audit_type
+- Returns: audit_data
+
+GET /api/v1/reports/analytics
+- Generate analytics report
+- Headers: Authorization
+- Query params: metric_type, date_range
+- Returns: analytics_report
+```
+
+### WebSocket Endpoints
+```
+WS /ws/market
+- Real-time market data updates
+- Subscription topics: prices, orders, trades
+
+WS /ws/assets
+- Real-time asset updates
+- Subscription topics: status, delivery, verification
+
+WS /ws/transactions
+- Real-time transaction updates
+- Subscription topics: status, confirmations
+```
+
+### Response Formats
+All endpoints follow standard response formats:
+
+```json
+// Success Response
+{
+  "success": true,
+  "data": {
+    // Response data
+  },
+  "timestamp": "ISO-8601 timestamp"
+}
+
+// Error Response
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Error description",
+    "details": {}
+  },
+  "timestamp": "ISO-8601 timestamp"
+}
+```
+
+### Authentication
+- All protected endpoints require Bearer token authentication
+- Format: `Authorization: Bearer <token>`
+- Tokens expire after 24 hours
+- Refresh token mechanism available
+
+### Rate Limiting
+- 100 requests per minute per IP for public endpoints
+- 1000 requests per minute per user for authenticated endpoints
+- WebSocket connections limited to 1 per user
