@@ -60,7 +60,7 @@ export default function HeroSection() {
               onClick={() => (window.location.href = "/marketplace")}
             >
               <Wallet className="w-5 h-5 mr-2" />
-              Ir para Marketplace
+              Invest
             </Button>
             <Button
               size="lg"
@@ -68,7 +68,7 @@ export default function HeroSection() {
               onClick={() => (window.location.href = "/tokenize")}
             >
               <Wallet className="w-5 h-5 mr-2" />
-              Tokenizar Safra
+              Tokenize Your Harvest
             </Button>
             <Button
               size="lg"
