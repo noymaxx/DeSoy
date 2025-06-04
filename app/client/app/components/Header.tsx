@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Wallet } from "lucide-react";
+import { Menu, X, Wallet, LogOut } from "lucide-react";
+import { useUser } from "@civic/auth/react";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, signIn: login, signOut: logout, isLoading: loading } = useUser();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,6 +18,56 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleWalletAction = async () => {
+    if (user) {
+      await logout();
+    } else {
+      await login();
+    }
+  };
+
+  const WalletButton = () => {
+    if (loading) {
+      return (
+        <Button disabled className="bg-yellow-500/70 text-black font-semibold">
+          <Wallet className="w-4 h-4 mr-2" />
+          Loading...
+        </Button>
+      );
+    }
+
+    if (user) {
+      return (
+        <div className="flex items-center gap-2">
+          <div className="hidden lg:flex flex-col text-right text-xs">
+            <span className="text-gray-300">Connected as</span>
+            <span className="text-yellow-400 font-semibold">
+              {user.email || user.id || "Authenticated User"}
+            </span>
+          </div>
+          <Button 
+            onClick={handleWalletAction}
+            variant="outline"
+            className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Disconnect
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <Button 
+        className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+        onClick={handleWalletAction}
+      >
+        <Wallet className="w-4 h-4 mr-2" />
+        Connect Wallet
+      </Button>
+    );
+  };
 
   return (
     <header
@@ -65,10 +117,7 @@ export default function Header() {
           </nav>
 
           <div className="hidden md:block">
-            <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
-              <Wallet className="w-4 h-4 mr-2" />
-              Connect Wallet
-            </Button>
+            <WalletButton />
           </div>
 
           {/* Mobile Menu Button */}
@@ -112,10 +161,19 @@ export default function Header() {
               >
                 Technology
               </a>
-              <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold w-full mt-4">
-                <Wallet className="w-4 h-4 mr-2" />
-                Connect Wallet
-              </Button>
+              
+              {/* Mobile Wallet Button */}
+              <div className="pt-2">
+                {user && (
+                  <div className="text-center mb-3">
+                    <p className="text-xs text-gray-400">Connected as</p>
+                    <p className="text-yellow-400 font-semibold text-sm">
+                      {user.email || user.id || "Authenticated User"}
+                    </p>
+                  </div>
+                )}
+                <WalletButton />
+              </div>
             </nav>
           </div>
         )}
