@@ -23,6 +23,8 @@ contract HarvestToken is ERC721, Ownable {
     mapping(uint256 => Harvest) public harvests;
     mapping(address => uint256[]) public farmerTokens;
 
+    address public investmentContract;
+
     event HarvestTokenized(
         uint256 indexed tokenId,
         address indexed farmer,
@@ -37,6 +39,15 @@ contract HarvestToken is ERC721, Ownable {
     event HarvestDefaulted(uint256 indexed tokenId);
 
     constructor() ERC721("HarvestToken", "HRVST") {}
+
+    modifier onlyInvestmentContract() {
+        require(msg.sender == investmentContract, "Only investment contract can call");
+        _;
+    }
+
+    function setInvestmentContract(address _contract) external onlyOwner {
+        investmentContract = _contract;
+    }
 
     function tokenizeHarvest(
         uint256 amount,
@@ -80,19 +91,18 @@ contract HarvestToken is ERC721, Ownable {
         return newTokenId;
     }
 
-    function completeHarvest(uint256 tokenId) external {
+    function completeHarvest(uint256 tokenId) external onlyInvestmentContract {
         require(_exists(tokenId), "Token does not exist");
-        require(msg.sender == harvests[tokenId].farmer, "Not token owner");
         require(harvests[tokenId].isActive, "Harvest not active");
 
         harvests[tokenId].isActive = false;
         emit HarvestCompleted(tokenId);
     }
 
-    function defaultHarvest(uint256 tokenId) external onlyOwner {
+    function defaultHarvest(uint256 tokenId) external onlyInvestmentContract {
         require(_exists(tokenId), "Token does not exist");
         require(harvests[tokenId].isActive, "Harvest not active");
-        
+
         harvests[tokenId].isActive = false;
         emit HarvestDefaulted(tokenId);
     }
@@ -124,4 +134,4 @@ contract HarvestToken is ERC721, Ownable {
             harvest.createdAt
         );
     }
-} 
+}
