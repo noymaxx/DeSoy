@@ -68,14 +68,11 @@ contract HarvestInvestment is Ownable, ReentrancyGuard {
         require(block.timestamp < harvestDate, "Harvest date has passed");
         require(amount > 0, "Amount must be greater than 0");
 
-        // Calculate total invested amount for this harvest
         uint256 totalInvested = getTotalInvestedAmount(harvestTokenId);
         require(totalInvested + amount <= requestedAmount, "Investment would exceed requested amount");
 
-        // Transfer payment tokens from investor to this contract
         require(paymentToken.transferFrom(msg.sender, address(this), amount), "Transfer failed");
 
-        // Create new investment
         Investment memory newInvestment = Investment({
             investor: msg.sender,
             amount: amount,
@@ -87,7 +84,6 @@ contract HarvestInvestment is Ownable, ReentrancyGuard {
         harvestInvestments[harvestTokenId].push(newInvestment);
         investorInvestments[msg.sender].push(harvestTokenId);
 
-        // Transfer the investment amount to the farmer
         require(paymentToken.transfer(farmer, amount), "Transfer to farmer failed");
 
         emit InvestmentMade(msg.sender, harvestTokenId, amount, block.timestamp);
@@ -117,11 +113,25 @@ contract HarvestInvestment is Ownable, ReentrancyGuard {
                     investments[i].investedAt,
                     apy
                 );
+                totalRepayment += investments[i].amount + interest;
+            }
+        }
+
+        require(paymentToken.transferFrom(msg.sender, address(this), totalRepayment), "Repayment transfer failed");
+
+        for (uint256 i = 0; i < investments.length; i++) {
+            if (!investments[i].isPaid) {
+                uint256 interest = calculateInterest(
+                    investments[i].amount,
+                    investments[i].investedAt,
+                    apy
+                );
                 uint256 repaymentAmount = investments[i].amount + interest;
-                totalRepayment += repaymentAmount;
+
+                require(paymentToken.transfer(investments[i].investor, repaymentAmount), "Investor transfer failed");
 
                 investments[i].isPaid = true;
-                
+
                 emit InvestmentRepaid(
                     harvestTokenId,
                     investments[i].investor,
@@ -131,26 +141,7 @@ contract HarvestInvestment is Ownable, ReentrancyGuard {
             }
         }
 
-        require(paymentToken.transferFrom(msg.sender, address(this), totalRepayment), "Repayment transfer failed");
-        
-        // Distribute repayments to investors
-        for (uint256 i = 0; i < investments.length; i++) {
-            if (investments[i].isPaid) {
-                uint256 interest = calculateInterest(
-                    investments[i].amount,
-                    investments[i].investedAt,
-                    apy
-                );
-                uint256 repaymentAmount = investments[i].amount + interest;
-                
-                require(paymentToken.transfer(investments[i].investor, repaymentAmount), "Investor transfer failed");
-            }
-        }
-
-        // Update trust score positively
         trustScoreManager.updateScore(farmer, true);
-        
-        // Mark harvest as completed
         harvestToken.completeHarvest(harvestTokenId);
     }
 
@@ -159,7 +150,7 @@ contract HarvestInvestment is Ownable, ReentrancyGuard {
         require(isActive, "Harvest is not active");
 
         Investment[] storage investments = harvestInvestments[harvestTokenId];
-        
+
         for (uint256 i = 0; i < investments.length; i++) {
             if (!investments[i].isPaid) {
                 emit InvestmentDefaulted(
@@ -170,10 +161,7 @@ contract HarvestInvestment is Ownable, ReentrancyGuard {
             }
         }
 
-        // Update trust score negatively
         trustScoreManager.updateScore(farmer, false);
-        
-        // Mark harvest as defaulted
         harvestToken.defaultHarvest(harvestTokenId);
     }
 
@@ -184,19 +172,15 @@ contract HarvestInvestment is Ownable, ReentrancyGuard {
     ) public view returns (uint256) {
         uint256 timeElapsed = block.timestamp - investedAt;
         uint256 yearInSeconds = 365 days;
-        
-        // Calculate interest: principal * (apy/100) * (timeElapsed/yearInSeconds)
         return (amount * apy * timeElapsed) / (100 * yearInSeconds);
     }
 
     function getTotalInvestedAmount(uint256 harvestTokenId) public view returns (uint256) {
         Investment[] memory investments = harvestInvestments[harvestTokenId];
         uint256 total = 0;
-        
         for (uint256 i = 0; i < investments.length; i++) {
             total += investments[i].amount;
         }
-        
         return total;
     }
 
@@ -211,19 +195,19 @@ contract HarvestInvestment is Ownable, ReentrancyGuard {
         bool[] memory paymentStatuses
     ) {
         Investment[] memory investments = harvestInvestments[harvestTokenId];
-        
+
         investors = new address[](investments.length);
         amounts = new uint256[](investments.length);
         investmentDates = new uint256[](investments.length);
         paymentStatuses = new bool[](investments.length);
-        
+
         for (uint256 i = 0; i < investments.length; i++) {
             investors[i] = investments[i].investor;
             amounts[i] = investments[i].amount;
             investmentDates[i] = investments[i].investedAt;
             paymentStatuses[i] = investments[i].isPaid;
         }
-        
+
         return (investors, amounts, investmentDates, paymentStatuses);
     }
-} 
+}
