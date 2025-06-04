@@ -1,0 +1,16 @@
+{
+  "transactions": [
+    {
+      "rpc": "https://flare-api.flare.network/ext/C/rpc"
+    },
+    {
+      "rpc": "https://flare-api.flare.network/ext/C/rpc"
+    },
+    {
+      "rpc": "https://flare-api.flare.network/ext/C/rpc"
+    },
+    {
+      "rpc": "https://flare-api.flare.network/ext/C/rpc"
+    }
+  ]
+}
