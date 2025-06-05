@@ -1,4 +1,4 @@
-export enum AssetType {
+export enum CropType {
   SOYBEAN = 'soybean',
   CORN = 'corn',
   WHEAT = 'wheat',
@@ -6,7 +6,7 @@ export enum AssetType {
   COTTON = 'cotton'
 }
 
-export enum AssetStatus {
+export enum CropStatus {
   PENDING = 'pending',
   TOKENIZED = 'tokenized',
   PARTIALLY_FUNDED = 'partially_funded',

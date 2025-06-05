@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { User } from '../../entities/User.entity';
-import { Asset } from '../../entities/Asset.entity';
+import { Asset } from '../../entities/Crop.entity';
 import { Investment } from '../../entities/Investment.entity';
 import { Transaction } from '../../entities/Transaction.entity';
 import { AssetUpdate } from '../../entities/AssetUpdate.entity';

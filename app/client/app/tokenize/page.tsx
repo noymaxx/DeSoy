@@ -11,21 +11,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Upload, FileText, Save, Coins } from "lucide-react"
 import DashboardHeader from "../components/DashboardHeader"
 import TokenizeConfirmationModal from "../components/TokenizeConfirmationModal"
+import { AssetService } from "../services/asset.service"
 
 export default function TokenizePage() {
   const [formData, setFormData] = useState({
-    cropType: "",
-    plantedArea: "",
-    expectedRevenue: "",
-    harvestDate: "",
-    location: "",
-    description: "",
+    assetType: "",
+    quantity: "",
+    pricePerUnit: "",
+    expectedHarvestDate: "",
+    expectedDeliveryDate: "",
+    location: {
+      latitude: 0,
+      longitude: 0,
+      address: ""
+    },
+    description: ""
   })
 
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([])
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | { latitude: number; longitude: number; address: string }) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -38,28 +44,57 @@ export default function TokenizePage() {
     setIsConfirmationModalOpen(true)
   }
 
-  const handleConfirmPublication = () => {
-    // Handle the actual publication logic here
-    console.log("Project published:", formData)
-    console.log("Files:", uploadedFiles)
+  const handleConfirmPublication = async () => {
+    try {
+      const assetService = AssetService.getInstance()
+      const assetData = {
+        assetType: formData.assetType,
+        quantity: Number(formData.quantity),
+        pricePerUnit: Number(formData.pricePerUnit),
+        expectedHarvestDate: formData.expectedHarvestDate,
+        expectedPaymentDate: formData.expectedDeliveryDate,
+        location: {
+          latitude: formData.location.latitude,
+          longitude: formData.location.longitude,
+          address: formData.location.address
+        }
+      }
 
-    // Reset form after successful publication
-    setFormData({
-      cropType: "",
-      plantedArea: "",
-      expectedRevenue: "",
-      harvestDate: "",
-      location: "",
-      description: "",
-    })
-    setUploadedFiles([])
+      await assetService.createAsset(assetData)
+
+      // Reset form after successful publication
+      setFormData({
+        assetType: "",
+        quantity: "",
+        pricePerUnit: "",
+        expectedHarvestDate: "",
+        expectedDeliveryDate: "",
+        location: {
+          latitude: 0,
+          longitude: 0,
+          address: ""
+        },
+        description: ""
+      })
+      setUploadedFiles([])
+    } catch (error: any) {
+      console.error('Failed to create asset:', error)
+      // You might want to add error handling UI here
+    }
   }
 
   const platformFee = 2.5
   const interestRate = 8.5
-  const maxValue = formData.expectedRevenue ? (Number.parseFloat(formData.expectedRevenue) * 0.7).toFixed(0) : "0"
+  const maxValue = formData.pricePerUnit ? (Number.parseFloat(formData.pricePerUnit) * Number.parseFloat(formData.quantity) * 0.7).toFixed(0) : "0"
 
-  const isFormValid = formData.cropType && formData.expectedRevenue && formData.harvestDate && formData.location
+  const isFormValid = formData.assetType && 
+    formData.quantity && 
+    formData.pricePerUnit && 
+    formData.expectedHarvestDate && 
+    formData.expectedDeliveryDate && 
+    formData.location.latitude && 
+    formData.location.longitude && 
+    formData.location.address
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
@@ -91,31 +126,32 @@ export default function TokenizePage() {
                 <CardContent className="space-y-4">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="cropType" className="text-gray-200">
-                        Crop Type
+                      <Label htmlFor="assetType" className="text-gray-200">
+                        Asset Type
                       </Label>
-                      <Select onValueChange={(value) => handleInputChange("cropType", value)} value={formData.cropType}>
+                      <Select onValueChange={(value) => handleInputChange("assetType", value)} value={formData.assetType}>
                         <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                           <SelectValue placeholder="Select crop type" />
                         </SelectTrigger>
                         <SelectContent className="bg-gray-700 border-gray-600">
-                          <SelectItem value="soy">Soy</SelectItem>
+                          <SelectItem value="soybean">Soybean</SelectItem>
                           <SelectItem value="corn">Corn</SelectItem>
                           <SelectItem value="wheat">Wheat</SelectItem>
-                          <SelectItem value="raspberries">Raspberries</SelectItem>
-                          <SelectItem value="sunflower">Sunflower</SelectItem>
+                          <SelectItem value="coffee">Coffee</SelectItem>
+                          <SelectItem value="cotton">Cotton</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="plantedArea" className="text-gray-200">
-                        Planted Area (hectares)
+                      <Label htmlFor="quantity" className="text-gray-200">
+                        Quantity
                       </Label>
                       <Input
-                        id="plantedArea"
+                        id="quantity"
+                        type="number"
                         placeholder="Ex: 500"
-                        value={formData.plantedArea}
-                        onChange={(e) => handleInputChange("plantedArea", e.target.value)}
+                        value={formData.quantity}
+                        onChange={(e) => handleInputChange("quantity", e.target.value)}
                         className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                       />
                     </div>
@@ -123,26 +159,42 @@ export default function TokenizePage() {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="expectedRevenue" className="text-gray-200">
-                        Expected Revenue (USDC)
+                      <Label htmlFor="pricePerUnit" className="text-gray-200">
+                        Price per Unit (USDC)
                       </Label>
                       <Input
-                        id="expectedRevenue"
-                        placeholder="Ex: 250000"
-                        value={formData.expectedRevenue}
-                        onChange={(e) => handleInputChange("expectedRevenue", e.target.value)}
+                        id="pricePerUnit"
+                        type="number"
+                        placeholder="Ex: 500"
+                        value={formData.pricePerUnit}
+                        onChange={(e) => handleInputChange("pricePerUnit", e.target.value)}
                         className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="harvestDate" className="text-gray-200">
+                      <Label htmlFor="expectedHarvestDate" className="text-gray-200">
                         Expected Harvest Date
                       </Label>
                       <Input
-                        id="harvestDate"
+                        id="expectedHarvestDate"
                         type="date"
-                        value={formData.harvestDate}
-                        onChange={(e) => handleInputChange("harvestDate", e.target.value)}
+                        value={formData.expectedHarvestDate}
+                        onChange={(e) => handleInputChange("expectedHarvestDate", e.target.value)}
+                        className="bg-gray-700 border-gray-600 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="expectedDeliveryDate" className="text-gray-200">
+                        Expected Delivery Date
+                      </Label>
+                      <Input
+                        id="expectedDeliveryDate"
+                        type="date"
+                        value={formData.expectedDeliveryDate}
+                        onChange={(e) => handleInputChange("expectedDeliveryDate", e.target.value)}
                         className="bg-gray-700 border-gray-600 text-white"
                       />
                     </div>
@@ -152,13 +204,30 @@ export default function TokenizePage() {
                     <Label htmlFor="location" className="text-gray-200">
                       Location
                     </Label>
-                    <Input
-                      id="location"
-                      placeholder="Ex: Sorriso - MT, Brazil"
-                      value={formData.location}
-                      onChange={(e) => handleInputChange("location", e.target.value)}
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    />
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <Input
+                        placeholder="Latitude"
+                        type="number"
+                        step="0.000001"
+                        value={formData.location.latitude}
+                        onChange={(e) => handleInputChange("location", { ...formData.location, latitude: parseFloat(e.target.value) })}
+                        className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                      />
+                      <Input
+                        placeholder="Longitude"
+                        type="number"
+                        step="0.000001"
+                        value={formData.location.longitude}
+                        onChange={(e) => handleInputChange("location", { ...formData.location, longitude: parseFloat(e.target.value) })}
+                        className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                      />
+                      <Input
+                        placeholder="Address"
+                        value={formData.location.address}
+                        onChange={(e) => handleInputChange("location", { ...formData.location, address: e.target.value })}
+                        className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                      />
+                    </div>
                   </div>
 
                   <div>

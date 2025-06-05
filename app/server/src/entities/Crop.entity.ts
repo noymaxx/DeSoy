@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base/BaseEntity';
-import { AssetType, AssetStatus } from './enums/AssetEnums';
+import { CropType, CropStatus } from './enums/CropEnums';
 import { User } from './User.entity';
 import { Investment } from './Investment.entity';
 import { AssetUpdate } from './AssetUpdate.entity';
@@ -8,8 +8,8 @@ import { ContractEvent } from './ContractEvent.entity';
 
 @Entity('assets')
 export class Asset extends BaseEntity {
-  @Column({ type: 'enum', enum: AssetType })
-  assetType!: AssetType;
+  @Column({ type: 'enum', enum: CropType })
+  assetType!: CropType;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   quantity!: number;
@@ -21,10 +21,10 @@ export class Asset extends BaseEntity {
   expectedHarvestDate!: Date;
 
   @Column({ type: 'timestamp' })
-  expectedDeliveryDate!: Date;
+  expectedPaymentDate!: Date;
 
-  @Column({ type: 'enum', enum: AssetStatus, default: AssetStatus.PENDING })
-  status!: AssetStatus;
+  @Column({ type: 'enum', enum: CropStatus, default: CropStatus.PENDING })
+  status!: CropStatus;
 
   @Column({ nullable: true })
   tokenContractAddress?: string;
@@ -45,17 +45,6 @@ export class Asset extends BaseEntity {
 
   @Column({ type: 'jsonb', nullable: true })
   weatherData?: Record<string, any>;
-
-  @Column({ type: 'jsonb', nullable: true })
-  metadata?: Record<string, any>;
-
-  // Smart contract related fields
-  @Column({ type: 'jsonb', nullable: true })
-  tokenMetadata?: {
-    tokenId: string;
-    totalSupply: number;
-    decimals: number;
-  };
 
   // Relationships
   @ManyToOne(() => User, user => user.producedAssets)

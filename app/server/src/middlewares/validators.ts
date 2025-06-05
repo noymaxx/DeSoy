@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { createError } from '../utils/errorHandler';
-import { AssetStatus, AssetType } from '../entities/enums/AssetEnums';
+import { CropStatus, CropType } from '../entities/enums/CropEnums';
 import { InvestmentStatus } from '../entities/enums/TransactionEnums';
 
 /**
@@ -88,7 +88,7 @@ export const assetValidations = {
     assetType: {
       required: true,
       type: 'string',
-      enum: AssetType,
+      enum: CropType,
       message: 'Asset type is required and must be valid'
     },
     quantity: {
@@ -131,7 +131,7 @@ export const assetValidations = {
   updateAsset: validate({
     assetType: {
       type: 'string',
-      enum: AssetType,
+      enum: CropType,
       message: 'Asset type must be valid'
     },
     quantity: {
@@ -158,7 +158,7 @@ export const assetValidations = {
     status: {
       required: true,
       type: 'string',
-      enum: AssetStatus,
+      enum: CropStatus,
       message: 'Status must be valid'
     },
     updateData: {

@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base/BaseEntity';
 import { EventType } from './enums/TransactionEnums';
-import { Asset } from './Asset.entity';
+import { Asset } from './Crop.entity';
 
 @Entity('contract_events')
 export class ContractEvent extends BaseEntity {
