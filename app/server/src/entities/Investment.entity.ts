@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base/BaseEntity';
 import { InvestmentStatus } from './enums/TransactionEnums';
 import { User } from './User.entity';
-import { Asset } from './Asset.entity';
+import { Asset } from './Crop.entity';
 
 @Entity('investments')
 export class Investment extends BaseEntity {
