@@ -2,9 +2,36 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, Wallet } from "lucide-react";
+import { ArrowRight, TrendingUp, Wallet, Brain, Coffee, Wheat, Sprout } from "lucide-react";
+import { useOraclePrices } from "../hooks/useOraclePrices";
+
+const ASSETS = ["corn", "wheat", "soybean", "coffee"];
+
+const getAssetIcon = (asset: string) => {
+  switch (asset.toLowerCase()) {
+    case 'corn':
+      return <Brain className="w-5 h-5 text-yellow-400 mr-2" />;
+    case 'wheat':
+      return <Wheat className="w-5 h-5 text-yellow-400 mr-2" />;
+    case 'coffee':
+      return <Coffee className="w-5 h-5 text-yellow-400 mr-2" />;
+    case 'soybean':
+      return <Sprout className="w-5 h-5 text-yellow-400 mr-2" />;
+    default:
+      return <TrendingUp className="w-5 h-5 text-yellow-400 mr-2" />;
+  }
+};
 
 export default function HeroSection() {
+  const { prices, loading, error } = useOraclePrices(ASSETS);
+
+  // Debug logs
+  console.log('HeroSection Render:', { prices, loading, error });
+
+  // Split prices into two rows
+  const firstRowPrices = prices?.slice(0, 2) || [];
+  const secondRowPrices = prices?.slice(2) || [];
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Pattern */}
@@ -85,23 +112,124 @@ export default function HeroSection() {
             </Button>
           </div>
 
-          {/* APY Ticker */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="inline-flex items-center bg-gray-800/50 backdrop-blur-md rounded-full px-6 py-3 border border-yellow-500/30"
-          >
-            <TrendingUp className="w-5 h-5 text-yellow-400 mr-2" />
-            <span className="text-gray-100 mr-2">Current APY:</span>
-            <motion.span
-              className="text-2xl font-bold text-yellow-400"
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-            >
-              12.5%
-            </motion.span>
-          </motion.div>
+          {/* Price Tickers and APY */}
+          <div className="flex flex-col gap-4 items-center mb-8">
+            {loading ? (
+              // Loading skeletons in two rows
+              <div className="grid grid-rows-2 gap-4 w-full">
+                <div className="flex gap-4 justify-center">
+                  {Array(2).fill(0).map((_, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.1 * i, duration: 0.6 }}
+                      className="inline-flex items-center bg-gray-800/50 backdrop-blur-md rounded-full px-6 py-3 border border-yellow-500/30"
+                    >
+                      <TrendingUp className="w-5 h-5 text-yellow-400/50 mr-2" />
+                      <div className="h-6 w-24 bg-gray-700/50 rounded animate-pulse"></div>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="flex gap-4 justify-center">
+                  {Array(3).fill(0).map((_, i) => (
+                    <motion.div
+                      key={i + 2}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.1 * (i + 2), duration: 0.6 }}
+                      className="inline-flex items-center bg-gray-800/50 backdrop-blur-md rounded-full px-6 py-3 border border-yellow-500/30"
+                    >
+                      <TrendingUp className="w-5 h-5 text-yellow-400/50 mr-2" />
+                      <div className="h-6 w-24 bg-gray-700/50 rounded animate-pulse"></div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            ) : prices && prices.length > 0 ? (
+              <div className="space-y-4">
+                {/* Price Tickers Grid */}
+                <div className="grid grid-rows-2 gap-4 w-full">
+                  {/* First Row */}
+                  <div className="flex gap-4 justify-center">
+                    {firstRowPrices.map((price, index) => (
+                      <motion.div
+                        key={price.asset}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.1 * index, duration: 0.6 }}
+                        className="inline-flex items-center bg-gray-800/50 backdrop-blur-md rounded-full px-6 py-3 border border-yellow-500/30"
+                      >
+                        {getAssetIcon(price.asset)}
+                        <span className="text-gray-100 mr-2 capitalize">{price.asset}:</span>
+                        <motion.span
+                          className="text-2xl font-bold text-yellow-400"
+                          animate={{ scale: [1, 1.05, 1] }}
+                          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                        >
+                          ${(price.priceInCents / 100).toFixed(2)}
+                        </motion.span>
+                      </motion.div>
+                    ))}
+                  </div>
+                  {/* Second Row */}
+                  <div className="flex gap-4 justify-center">
+                    {secondRowPrices.map((price, index) => (
+                      <motion.div
+                        key={price.asset}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.1 * (index + 2), duration: 0.6 }}
+                        className="inline-flex items-center bg-gray-800/50 backdrop-blur-md rounded-full px-6 py-3 border border-yellow-500/30"
+                      >
+                        {getAssetIcon(price.asset)}
+                        <span className="text-gray-100 mr-2 capitalize">{price.asset}:</span>
+                        <motion.span
+                          className="text-2xl font-bold text-yellow-400"
+                          animate={{ scale: [1, 1.05, 1] }}
+                          transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                        >
+                          ${(price.priceInCents / 100).toFixed(2)}
+                        </motion.span>
+                      </motion.div>
+                    ))}
+                    {/* APY Ticker */}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.5, duration: 0.6 }}
+                      className="inline-flex items-center bg-gray-800/50 backdrop-blur-md rounded-full px-6 py-3 border border-yellow-500/30"
+                    >
+                      <TrendingUp className="w-5 h-5 text-yellow-400 mr-2" />
+                      <span className="text-gray-100 mr-2">Average APY:</span>
+                      <motion.span
+                        className="text-2xl font-bold text-yellow-400"
+                        animate={{ scale: [1, 1.05, 1] }}
+                        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                      >
+                        12.5%
+                      </motion.span>
+                    </motion.div>
+                  </div>
+                </div>
+                {/* Last Updated Text */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6, duration: 0.4 }}
+                  className="text-center text-sm text-gray-400"
+                >
+                  <span>Prices from Oracle • Last updated: </span>
+                  <span>
+                    {prices[0]?.lastUpdated?.toLocaleTimeString()} {prices[0]?.lastUpdated?.toLocaleDateString()}
+                  </span>
+                </motion.div>
+              </div>
+            ) : error ? (
+              // Error state
+              <div className="text-red-400">Error loading prices: {error}</div>
+            ) : null}
+          </div>
         </motion.div>
       </div>
     </section>
