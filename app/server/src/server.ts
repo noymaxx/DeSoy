@@ -1,44 +1,43 @@
 import 'reflect-metadata';
-import app from './config/app';
-import { SERVER_PORT, NODE_ENV } from './config/constants';
-import routes from './routes/index';
-import { initializeDatabase } from './config/database/database.config';
+import express, { Application } from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
 
-console.log(`Environment: ${NODE_ENV}`);
-console.log('Connecting to database...');
+import { AppDataSource } from './config/database/data-source';
+import userRoutes from './routes/user.routes';
 
-// Register API routes
-app.use('/api', routes);
+dotenv.config();
 
-// Start the server
-const startServer = async () => {
-  try {
-    // Initialize the database
-    await initializeDatabase();
-    
-    // Start the server
-    app.listen(SERVER_PORT, () => {
-      console.log(`Server is running on port ${SERVER_PORT}`);
-      console.log(`Environment: ${NODE_ENV}`);
-      console.log(`API URL: http://localhost:${SERVER_PORT}/api`);
+const app: Application = express();
+const PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
+
+// --- Middlewares ---
+app.use(cors({ 
+  origin: process.env.CLIENT_URL || 'http://localhost:3001'
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// --- API Routes ---
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'UP', message: 'Server is healthy' });
+});
+
+app.use('/api/v1/users', userRoutes);
+
+// --- Database Connection & Server Start ---
+AppDataSource.initialize()
+  .then(() => {
+    console.log('PostgreSQL Data Source has been initialized successfully.');
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+      console.log(`API available at http://localhost:${PORT}/api`);
+      console.log(`User API available at http://localhost:${PORT}/api/v1/users`);
     });
-  } catch (error) {
-    console.error('Error during server startup:', error);
+  })
+  .catch((err) => {
+    console.error('Error during Data Source initialization:', err);
     process.exit(1);
-  }
-};
+  });
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  process.exit(1);
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (error) => {
-  console.error('Unhandled Rejection:', error);
-  process.exit(1);
-});
-
-// Start the application
-startServer();
+export default app;

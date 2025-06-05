@@ -36,7 +36,7 @@ export const errorHandler = (
   const isDev = EnvManager.getEnvOrThrow("NODE_ENV") !== 'production';
   
   // Log the error
-  console.error('\x1b[31m%s\x1b[0m', `[ERRO] ${err.message}`);
+  console.error('\x1b[31m%s\x1b[0m', `[ERROR] ${err.message}`);
   if (isDev) {
     console.error(err.stack);
   }

@@ -1,54 +1,23 @@
 import { Entity, Column, OneToMany } from 'typeorm';
-import { IsEmail, MinLength } from 'class-validator';
-import { Exclude } from 'class-transformer';
 import { BaseEntity } from './base/BaseEntity';
-import { UserRole, UserStatus, VerificationStatus } from './enums/UserEnums';
 import { Asset } from './Crop.entity';
-import { Investment } from '../entities/Investment.entity';
-import { Transaction } from '../entities/Transaction.entity';
+import { Investment } from './Investment.entity';
+import { Transaction } from './Transaction.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
-  @Column()
-  firstName!: string;
-
-  @Column()
-  lastName!: string;
-
-  @Column({ unique: true })
-  @IsEmail()
-  email!: string;
-
-  @Column()
-  @Exclude()
-  @MinLength(6)
-  password!: string;
-
-  @Column({ unique: true })
+  @Column({ type: 'varchar', length: 42, unique: true, nullable: false })
   walletAddress!: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.PRODUCER })
-  role!: UserRole;
+  @Column({ type: 'varchar', nullable: true, unique: true })
+  civicUserId?: string;
 
-  @Column({ type: 'enum', enum: UserStatus, default: UserStatus.PENDING })
-  status!: UserStatus;
+  @Column({ type: 'varchar', nullable: true })
+  siweNonce?: string;
 
-  @Column({ type: 'enum', enum: VerificationStatus, default: VerificationStatus.UNVERIFIED })
-  verificationStatus!: VerificationStatus;
-
-  @Column({ nullable: true })
-  civicId?: string;
-
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0.00 })
   reputationScore!: number;
 
-  @Column({ type: 'jsonb', nullable: true })
-  verificationData?: Record<string, any>;
-
-  @Column({ type: 'jsonb', nullable: true })
-  metadata?: Record<string, any>;
-
-  // Relationships
   @OneToMany(() => Asset, asset => asset.producer)
   producedAssets!: Asset[];
 
@@ -60,4 +29,15 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Transaction, transaction => transaction.toUser)
   receivedTransactions!: Transaction[];
+}
+
+export interface IUser {
+  id: string;
+  walletAddress: string;
+  civicUserId?: string;
+  siweNonce?: string;
+  reputationScore: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
 } 
