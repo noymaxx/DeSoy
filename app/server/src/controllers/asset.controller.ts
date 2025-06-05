@@ -7,7 +7,7 @@ import { CropStatus } from '../entities/enums/CropEnums';
 const assetService = new AssetService();
 
 export class AssetController {
-  createAsset = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  createAsset = asyncHandler(async (req: Request, res: Response): Promise<void> => {    
     const userWalletAddress = req.body.walletAddress as string;
     
     if (!userWalletAddress) {

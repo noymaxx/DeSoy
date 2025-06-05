@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Upload, FileText, Save, Coins } from "lucide-react"
 import DashboardHeader from "../components/DashboardHeader"
 import TokenizeConfirmationModal from "../components/TokenizeConfirmationModal"
-import { AssetService } from "../services/asset.service"
+import { createAsset } from "../services/asset.service"
 
 export default function TokenizePage() {
   const [formData, setFormData] = useState({
@@ -44,44 +44,24 @@ export default function TokenizePage() {
     setIsConfirmationModalOpen(true)
   }
 
-  const handleConfirmPublication = async () => {
-    try {
-      const assetService = AssetService.getInstance()
-      const assetData = {
-        assetType: formData.assetType,
-        quantity: Number(formData.quantity),
-        pricePerUnit: Number(formData.pricePerUnit),
-        expectedHarvestDate: formData.expectedHarvestDate,
-        expectedPaymentDate: formData.expectedDeliveryDate,
-        location: {
-          latitude: formData.location.latitude,
-          longitude: formData.location.longitude,
-          address: formData.location.address
-        }
-      }
-
-      await assetService.createAsset(assetData)
-
-      // Reset form after successful publication
-      setFormData({
-        assetType: "",
-        quantity: "",
-        pricePerUnit: "",
-        expectedHarvestDate: "",
-        expectedDeliveryDate: "",
-        location: {
-          latitude: 0,
-          longitude: 0,
-          address: ""
-        },
-        description: ""
-      })
-      setUploadedFiles([])
-    } catch (error: any) {
-      console.error('Failed to create asset:', error)
-      // You might want to add error handling UI here
-    }
-  }
+  const handleConfirmPublication = () => {
+    // Reset form after successful publication
+    setFormData({
+      assetType: "",
+      quantity: "",
+      pricePerUnit: "",
+      expectedHarvestDate: "",
+      expectedDeliveryDate: "",
+      location: {
+        latitude: 0,
+        longitude: 0,
+        address: ""
+      },
+      description: ""
+    });
+    setUploadedFiles([]);
+    setIsConfirmationModalOpen(false);
+  };
 
   const platformFee = 2.5
   const interestRate = 8.5

@@ -21,6 +21,7 @@ import {
   Coins,
   AlertTriangle,
 } from "lucide-react";
+import { createAsset } from "../services/asset.service";
 
 interface TokenizeData {
   assetType: string;
@@ -53,6 +54,7 @@ export default function TokenizeConfirmationModal({
 }: TokenizeConfirmationModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const platformFee = 2.5;
   const interestRate = 8.5;
@@ -61,24 +63,45 @@ export default function TokenizeConfirmationModal({
     : "0";
 
   const handleConfirm = async () => {
-    setIsProcessing(true);
+    try {
+      setIsProcessing(true);
+      setError(null);
 
-    // Simulate blockchain transaction and validation
-    await new Promise((resolve) => setTimeout(resolve, 4000));
+      const assetData = {
+        assetType: formData.assetType,
+        quantity: Number(formData.quantity),
+        pricePerUnit: Number(formData.pricePerUnit),
+        expectedHarvestDate: formData.expectedHarvestDate,
+        expectedPaymentDate: formData.expectedDeliveryDate,
+        location: {
+          latitude: formData.location.latitude,
+          longitude: formData.location.longitude,
+          address: formData.location.address
+        },
+        walletAddress: "0x123...789" // TODO: Replace with actual connected wallet address
+      };
 
-    setIsProcessing(false);
-    setIsCompleted(true);
+      await createAsset(assetData);
+      
+      setIsProcessing(false);
+      setIsCompleted(true);
 
-    // Wait a bit before calling the completion callback
-    setTimeout(() => {
-      onConfirm();
-      onClose();
-      // Reset states for next time
+      // Wait a bit before calling the completion callback
       setTimeout(() => {
-        setIsCompleted(false);
-        setIsProcessing(false);
-      }, 500);
-    }, 2500);
+        onConfirm();
+        onClose();
+        // Reset states for next time
+        setTimeout(() => {
+          setIsCompleted(false);
+          setIsProcessing(false);
+          setError(null);
+        }, 500);
+      }, 2500);
+    } catch (error: any) {
+      setIsProcessing(false);
+      setError(error.message || 'Failed to create asset');
+      console.error('Failed to create asset:', error);
+    }
   };
 
   const handleClose = () => {
@@ -88,6 +111,7 @@ export default function TokenizeConfirmationModal({
       setTimeout(() => {
         setIsCompleted(false);
         setIsProcessing(false);
+        setError(null);
       }, 300);
     }
   };
@@ -312,6 +336,19 @@ export default function TokenizeConfirmationModal({
                     </div>
                   </div>
                 </div>
+
+                {/* Add error message display */}
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
+                    <div className="flex items-start">
+                      <AlertTriangle className="w-5 h-5 text-red-400 mr-2 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm">
+                        <p className="text-red-400 font-semibold mb-1">Error</p>
+                        <p className="text-gray-300">{error}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {isProcessing ? (
                   <div className="text-center py-8">
