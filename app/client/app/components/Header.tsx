@@ -3,19 +3,85 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Wallet, LogOut, PlusCircle } from "lucide-react";
-import { useUser } from "@civic/auth-web3/react";
-import { userHasWallet } from "@civic/auth-web3";
+import { Menu, X, Wallet, LogOut } from "lucide-react";
+import { useCivicAuth } from "@civic/auth/nextjs/client";
 import { toast } from "sonner";
+
+// Custom hook for EVM wallet management with localStorage
+const useEVMWallet = () => {
+  const [evmWalletAddress, setEvmWalletAddress] = useState<string | null>(null);
+  const [isConnectingWallet, setIsConnectingWallet] = useState(false);
+
+  // Load wallet from localStorage on mount
+  useEffect(() => {
+    const savedWallet = localStorage.getItem('civic_evm_wallet_address');
+    if (savedWallet) {
+      setEvmWalletAddress(savedWallet);
+    }
+  }, []);
+
+  const saveWalletToStorage = (address: string) => {
+    localStorage.setItem('civic_evm_wallet_address', address);
+    setEvmWalletAddress(address);
+  };
+
+  const clearWalletFromStorage = () => {
+    localStorage.removeItem('civic_evm_wallet_address');
+    setEvmWalletAddress(null);
+  };
+
+  const connectEVMWallet = async () => {
+    if (typeof window === 'undefined' || !window.ethereum) {
+      toast.error("MetaMask não está instalado. Instale para conectar sua carteira EVM.");
+      return null;
+    }
+
+    setIsConnectingWallet(true);
+    try {
+      // Request account access
+      const accounts = await window.ethereum.request({ 
+        method: 'eth_requestAccounts' 
+      });
+      
+      if (accounts && accounts.length > 0) {
+        const address = accounts[0];
+        saveWalletToStorage(address);
+        toast.success(`Carteira EVM conectada: ${address.substring(0, 6)}...${address.substring(address.length - 4)}`);
+        return address;
+      }
+    } catch (error: any) {
+      console.error('Erro ao conectar carteira EVM:', error);
+      toast.error(error.message || "Erro ao conectar carteira EVM");
+    } finally {
+      setIsConnectingWallet(false);
+    }
+    return null;
+  };
+
+  return {
+    evmWalletAddress,
+    isConnectingWallet,
+    connectEVMWallet,
+    clearWalletFromStorage,
+    saveWalletToStorage
+  };
+};
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const userContext = useUser();
-  const { user, signIn: login, signOut: logout, isLoading: loading, error } = userContext;
-
-  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
   const [isRegisteringWithBackend, setIsRegisteringWithBackend] = useState(false);
+
+  // Use standard Civic auth hooks
+  const { user, login, logout, loading, error } = useCivicAuth();
+  
+  // Use custom EVM wallet hook
+  const { 
+    evmWalletAddress, 
+    isConnectingWallet, 
+    connectEVMWallet, 
+    clearWalletFromStorage 
+  } = useEVMWallet();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,15 +98,16 @@ export default function Header() {
     }
   }, [error]);
 
+  // Register user with backend when both Civic user and EVM wallet are available
   useEffect(() => {
     const registerUserWalletWithBackend = async (address: string) => {
-      if (isRegisteringWithBackend) return; // Prevent multiple calls
+      if (isRegisteringWithBackend) return;
       setIsRegisteringWithBackend(true);
       console.log(`Attempting to register wallet ${address} with backend...`);
+      
       try {
-        // Ensure this URL points to your backend.
-        // If client is on 3001 and server on 3000, direct URL is needed or proxy.
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'; 
+        // Updated to use port 3001 where your backend is running
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'; 
         const response = await fetch(`${backendUrl}/api/v1/users/wallet`, {
           method: 'POST',
           headers: {
@@ -48,10 +115,11 @@ export default function Header() {
           },
           body: JSON.stringify({ walletAddress: address }),
         });
+        
         const data = await response.json();
         if (response.ok) {
           console.log('Backend response (user processed):', data);
-          // Optional: toast.success(`Wallet ${data.walletAddress} registered/verified.`);
+          toast.success(`Usuário registrado no backend: ${address.substring(0, 6)}...${address.substring(address.length - 4)}`);
         } else {
           console.error('Backend error (processing user):', data);
           toast.error(data.message || 'Falha ao registrar carteira com o backend.');
@@ -64,41 +132,29 @@ export default function Header() {
       }
     };
 
-    if (user && userHasWallet(userContext)) {
-      const walletAddress = userContext.ethereum.address;
-      console.log("Civic User Object (from userContext.user):", JSON.stringify(user, null, 2));
-      console.log("Embedded Wallet Address found:", walletAddress);
-      registerUserWalletWithBackend(walletAddress);
-    } else if (user && !userHasWallet(userContext)) {
-      console.log("Civic User Object (from userContext.user):", JSON.stringify(user, null, 2));
-      console.log("User does not have an embedded wallet yet. Wallet creation should be triggered by UI.");
-    } else {
-      console.log("Civic User Object: null");
+    if (user && evmWalletAddress) {
+      console.log("Civic User Object:", JSON.stringify(user, null, 2));
+      console.log("EVM Wallet Address:", evmWalletAddress);
+      registerUserWalletWithBackend(evmWalletAddress);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps 
-  }, [user, userContext, userHasWallet(userContext)]); // Added userHasWallet(userContext) to deps to re-run when wallet is created
+  }, [user, evmWalletAddress, isRegisteringWithBackend]);
 
-  const handleCreateWallet = async () => {
-    if (user && !userHasWallet(userContext) && userContext.createWallet) {
-      setIsCreatingWallet(true);
-      try {
-        await userContext.createWallet();
-        toast.success("Carteira embutida Civic criada com sucesso!");
-        // The useEffect above should now pick up the new wallet address and call the backend.
-      } catch (err: any) {
-        console.error("Erro ao criar carteira embutida Civic:", err);
-        toast.error(err.message || "Falha ao criar carteira embutida Civic.");
-      }
-      setIsCreatingWallet(false);
-    }
+  const handleLogin = async () => {
+    await login();
   };
 
-  const handleWalletAction = async () => {
-    if (user) {
-      await logout();
-    } else {
-      await login();
+  const handleLogout = async () => {
+    await logout();
+    clearWalletFromStorage(); // Clear wallet from localStorage on logout
+    toast.info("Desconectado da Civic e carteira EVM removida.");
+  };
+
+  const handleConnectWallet = async () => {
+    if (!user) {
+      toast.error("Faça login com a Civic primeiro.");
+      return;
     }
+    await connectEVMWallet();
   };
 
   const WalletButtonContent = () => {
@@ -111,72 +167,64 @@ export default function Header() {
       );
     }
 
-    if (user) {
-      if (userHasWallet(userContext)) {
-        const displayAddress = userContext.ethereum.address;
-        const shortAddress = `${displayAddress.substring(0, 6)}...${displayAddress.substring(displayAddress.length - 4)}`;
-        return (
-          <div className="flex items-center gap-2">
-            <div className="hidden lg:flex flex-col text-right text-xs">
-              <span className="text-gray-300">Carteira Civic:</span>
-              <span className="text-yellow-400 font-semibold" title={displayAddress}>
-                {shortAddress}
-              </span>
-            </div>
-            <Button
-              onClick={handleWalletAction}
-              variant="outline"
-              className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Desconectar
-            </Button>
+    if (user && evmWalletAddress) {
+      const shortAddress = `${evmWalletAddress.substring(0, 6)}...${evmWalletAddress.substring(evmWalletAddress.length - 4)}`;
+      return (
+        <div className="flex items-center gap-2">
+          <div className="hidden lg:flex flex-col text-right text-xs">
+            <span className="text-gray-300">Civic: {user.email || user.id || "Conectado"}</span>
+            <span className="text-yellow-400 font-semibold" title={evmWalletAddress}>
+              EVM: {shortAddress}
+            </span>
           </div>
-        );
-      } else if (userContext.walletCreationInProgress || isCreatingWallet) {
-        return (
-          <Button disabled className="bg-blue-500/70 text-black font-semibold">
-            <PlusCircle className="w-4 h-4 mr-2 animate-spin" />
-            Criando Carteira...
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Desconectar
           </Button>
-        );
-      } else {
-        return (
-          <div className="flex items-center gap-2">
-            <div className="hidden lg:flex flex-col text-right text-xs">
-              <span className="text-gray-300">Usuário: {user.email || user.id}</span>
-              <span className="text-yellow-400 font-semibold">
-                Carteira Civic não criada
-              </span>
-            </div>
-            <Button
-              onClick={handleCreateWallet}
-              className="bg-green-500 hover:bg-green-600 text-black font-semibold mr-2"
-              disabled={isCreatingWallet || userContext.walletCreationInProgress}
-            >
-              <PlusCircle className="w-4 h-4 mr-2" />
-              Criar Carteira Civic
-            </Button>
-            <Button
-              onClick={handleWalletAction}
-              variant="outline"
-              className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
+        </div>
+      );
+    }
+
+    if (user && !evmWalletAddress) {
+      return (
+        <div className="flex items-center gap-2">
+          <div className="hidden lg:flex flex-col text-right text-xs">
+            <span className="text-gray-300">Civic: {user.email || user.id || "Conectado"}</span>
+            <span className="text-red-400 font-semibold">
+              Carteira EVM não conectada
+            </span>
           </div>
-        );
-      }
+          <Button
+            onClick={handleConnectWallet}
+            className="bg-green-500 hover:bg-green-600 text-black font-semibold mr-2"
+            disabled={isConnectingWallet}
+          >
+            <Wallet className="w-4 h-4 mr-2" />
+            {isConnectingWallet ? "Conectando..." : "Conectar Carteira EVM"}
+          </Button>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sair
+          </Button>
+        </div>
+      );
     }
 
     return (
       <Button
         className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-        onClick={handleWalletAction}
+        onClick={handleLogin}
       >
         <Wallet className="w-4 h-4 mr-2" />
-        Conectar Login Civic
+        Login Civic + EVM
       </Button>
     );
   };
@@ -200,7 +248,6 @@ export default function Header() {
             />
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <a
               href="#how-it-works"
@@ -232,7 +279,6 @@ export default function Header() {
             <WalletButtonContent />
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             className="md:hidden text-white"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -245,7 +291,6 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t border-yellow-500/30">
             <nav className="flex flex-col space-y-4 mt-4">
@@ -274,7 +319,6 @@ export default function Header() {
                 Tecnologia
               </a>
               
-              {/* Mobile Wallet Button/Info */}
               <div className="pt-4 border-t border-gray-700">
                 <WalletButtonContent />
               </div>
