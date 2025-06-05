@@ -2,8 +2,9 @@ import type React from "react"
 import "./globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import { CivicAuthProvider } from "@civic/auth/nextjs"
+import { CivicAuthProvider } from "@civic/auth-web3/react"
 import { Toaster } from "@/components/ui/sonner"
+import { WalletProvider } from "@/lib/contexts/WalletContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -19,12 +20,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const civicClientId = "161a57bc-f60e-462f-ab4b-8652c82936fa" // Your Client ID
+
   return (
     <html lang="en" className="scroll-smooth">
       <body className={inter.className}>
-        <CivicAuthProvider>
-          {children}
-          <Toaster />
+        <CivicAuthProvider clientId={civicClientId}>
+          <WalletProvider>
+            {children}
+            <Toaster />
+          </WalletProvider>
         </CivicAuthProvider>
       </body>
     </html>

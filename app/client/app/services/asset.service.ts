@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 interface CreateAssetDTO {
   assetType: string;
   quantity: number;
@@ -41,24 +39,32 @@ export const createAsset = async (data: CreateAssetDTO): Promise<ApiResponse<any
       throw new Error("Missing required location fields: latitude, longitude, or address");
     }
 
-    // Send the POST request to the backend
-    const response = await axios.post(API_BASE_URL, data, {
+    // Send the POST request to the backend using fetch
+    const response = await fetch(API_BASE_URL, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-wallet-address': data.walletAddress,
-      }
+      },
+      body: JSON.stringify(data),
     });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.message || `HTTP error! status: ${response.status}`);
+    }
 
     return {
       success: true,
       message: "Asset created successfully",
-      data: response.data
+      data: responseData
     };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.message || "Failed to create asset",
-      error: error.response?.data || error.message
+      message: error.message || "Failed to create asset",
+      error: error.message
     };
   }
 };
@@ -70,21 +76,28 @@ export const createAsset = async (data: CreateAssetDTO): Promise<ApiResponse<any
  */
 export const getAssets = async (walletAddress: string): Promise<ApiResponse<any[]>> => {
   try {
-    const response = await axios.get(API_BASE_URL, {
+    const response = await fetch(API_BASE_URL, {
+      method: 'GET',
       headers: {
         'x-wallet-address': walletAddress,
-      }
+      },
     });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.message || `HTTP error! status: ${response.status}`);
+    }
 
     return {
       success: true,
-      data: response.data
+      data: responseData
     };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.message || "Failed to fetch assets",
-      error: error.response?.data || error.message
+      message: error.message || "Failed to fetch assets",
+      error: error.message
     };
   }
 };
@@ -97,21 +110,28 @@ export const getAssets = async (walletAddress: string): Promise<ApiResponse<any[
  */
 export const getAssetById = async (id: string, walletAddress: string): Promise<ApiResponse<any>> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/${id}`, {
+      method: 'GET',
       headers: {
         'x-wallet-address': walletAddress,
-      }
+      },
     });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(responseData.message || `HTTP error! status: ${response.status}`);
+    }
 
     return {
       success: true,
-      data: response.data
+      data: responseData
     };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.message || "Failed to fetch asset",
-      error: error.response?.data || error.message
+      message: error.message || "Failed to fetch asset",
+      error: error.message
     };
   }
 }; 
