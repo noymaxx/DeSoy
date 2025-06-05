@@ -1,7 +1,7 @@
 {
-  "name": "server",
+  "name": "rural-credit-defi-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend API for Rural Credit DeFi Platform - tokenization of agricultural receivables with Civic identity verification and Chainlink oracles",
   "main": "src/server.ts",
   "scripts": {
     "start": "node dist/server.js",
@@ -12,8 +12,8 @@
     "migration:run": "npm run typeorm migration:run -- -d src/config/database/data-source.ts",
     "migration:revert": "npm run typeorm migration:revert -- -d src/config/database/data-source.ts"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["defi", "agriculture", "tokenization", "civic", "chainlink", "rural-credit", "blockchain"],
+  "author": "ETH Belgrade Hackathon Team",
   "license": "ISC",
   "dependencies": {
     "@types/pg": "^8.15.4",
@@ -30,6 +30,7 @@
     "morgan": "^1.10.0",
     "pg": "^8.11.3",
     "reflect-metadata": "^0.2.2",
+    "sqlite3": "^5.1.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "typeorm": "^0.3.24",

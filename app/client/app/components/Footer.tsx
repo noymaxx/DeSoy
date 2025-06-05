@@ -40,7 +40,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="https://github.com/vict0rcarvalh0/eth-belgrade-hackathon/blob/main/README.md"
+                  href="https://noymaxx.gitbook.io/desoy-1"
                   className="text-gray-100 hover:text-yellow-400 transition-colors flex items-center"
                 >
                   <FileText className="w-4 h-4 mr-2" />

@@ -1,64 +1,35 @@
-import { Entity, Column, OneToMany } from "typeorm";
-import { IsEmail, MinLength } from "class-validator";
-import { Exclude } from "class-transformer";
-import { BaseEntity } from "./base/BaseEntity";
-import { UserRole, UserStatus, VerificationStatus } from "./enums/UserEnums";
-import { Investment } from "../entities/Investment.entity";
-import { Transaction } from "../entities/Transaction.entity";
+import { Entity, Column, OneToMany } from 'typeorm';
+import { BaseEntity } from './base/BaseEntity';
+import { Transaction } from './Transaction.entity';
 
 @Entity("users")
 export class User extends BaseEntity {
-    @Column()
-    firstName!: string;
+  @Column({ type: 'varchar', length: 42, unique: true, nullable: false })
+  walletAddress!: string;
 
-    @Column()
-    lastName!: string;
+  @Column({ type: 'varchar', nullable: true, unique: true })
+  civicUserId?: string;
 
-    @Column({ unique: true })
-    @IsEmail()
-    email!: string;
+  @Column({ type: 'varchar', nullable: true })
+  siweNonce?: string;
 
-    @Column()
-    @Exclude()
-    @MinLength(6)
-    password!: string;
+  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0.00 })
+  reputationScore!: number;
 
-    @Column({ unique: true })
-    walletAddress!: string;
+  @OneToMany(() => Transaction, (transaction) => transaction.fromUser)
+  sentTransactions!: Transaction[];
 
-    @Column({ type: "enum", enum: UserRole, default: UserRole.PRODUCER })
-    role!: UserRole;
-
-    @Column({ type: "enum", enum: UserStatus, default: UserStatus.PENDING })
-    status!: UserStatus;
-
-    @Column({
-        type: "enum",
-        enum: VerificationStatus,
-        default: VerificationStatus.UNVERIFIED,
-    })
-    verificationStatus!: VerificationStatus;
-
-    @Column({ nullable: true })
-    civicId?: string;
-
-    @Column({ type: "decimal", precision: 5, scale: 2, default: 0 })
-    reputationScore!: number;
-
-    @Column({ type: "jsonb", nullable: true })
-    verificationData?: Record<string, any>;
-
-    @Column({ type: "jsonb", nullable: true })
-    metadata?: Record<string, any>;
-
-    // Relationships
-    // ❌ removed producedAssets because `Asset` no longer has the `producer` relation
-    @OneToMany(() => Investment, (investment) => investment.investor)
-    investments!: Investment[];
-
-    @OneToMany(() => Transaction, (transaction) => transaction.fromUser)
-    sentTransactions!: Transaction[];
-
-    @OneToMany(() => Transaction, (transaction) => transaction.toUser)
-    receivedTransactions!: Transaction[];
+  @OneToMany(() => Transaction, transaction => transaction.toUser)
+  receivedTransactions!: Transaction[];
 }
+
+export interface IUser {
+  id: string;
+  walletAddress: string;
+  civicUserId?: string;
+  siweNonce?: string;
+  reputationScore: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+} 

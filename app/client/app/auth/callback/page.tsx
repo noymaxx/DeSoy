@@ -14,7 +14,7 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Verificar se há parâmetros de erro na URL
+        // Check if there are error parameters in the URL
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get('error');
         
@@ -24,7 +24,7 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        // Verificar se a sessão foi criada com sucesso
+        // Check if the session was created successfully
         const response = await fetch('/api/auth/session');
         if (response.ok) {
           const session = await response.json();
