@@ -1,6 +1,7 @@
 {
-  "name": "my-v0-project",
+  "name": "rural-credit-defi-frontend",
   "version": "0.1.0",
+  "description": "Frontend application for Rural Credit DeFi Platform - Next.js app with Civic authentication and embedded wallets",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -47,6 +48,7 @@
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
+    "ethers": "^6.14.3",
     "framer-motion": "latest",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
