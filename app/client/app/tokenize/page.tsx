@@ -314,6 +314,23 @@ export default function TokenizePage() {
                                                 }
                                                 className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                                             />
+                                            <Input
+                                                placeholder="Street number"
+                                                value={
+                                                    formData.location.address
+                                                }
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        "location",
+                                                        {
+                                                            ...formData.location,
+                                                            address:
+                                                                e.target.value,
+                                                        }
+                                                    )
+                                                }
+                                                className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                                            />
                                         </div>
                                     </div>
 
