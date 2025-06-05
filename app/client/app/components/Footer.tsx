@@ -21,13 +21,13 @@ export default function Footer() {
             </p>
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://github.com/vict0rcarvalh0/eth-belgrade-hackathon/tree/main"
                 className="text-yellow-400 hover:text-yellow-300 transition-colors"
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://github.com/vict0rcarvalh0/eth-belgrade-hackathon/tree/main"
                 className="text-yellow-400 hover:text-yellow-300 transition-colors"
               >
                 <Github className="w-5 h-5" />
@@ -40,7 +40,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="#"
+                  href="https://github.com/vict0rcarvalh0/eth-belgrade-hackathon/blob/main/README.md"
                   className="text-gray-100 hover:text-yellow-400 transition-colors flex items-center"
                 >
                   <FileText className="w-4 h-4 mr-2" />
@@ -49,7 +49,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://github.com/vict0rcarvalh0/eth-belgrade-hackathon/blob/main/README.md"
                   className="text-gray-100 hover:text-yellow-400 transition-colors flex items-center"
                 >
                   <Book className="w-4 h-4 mr-2" />
@@ -58,7 +58,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/soon"
                   className="text-gray-100 hover:text-yellow-400 transition-colors"
                 >
                   FAQ
@@ -72,7 +72,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="#"
+                  href="/soon"
                   className="text-gray-100 hover:text-yellow-400 transition-colors"
                 >
                   Terms of Service
@@ -80,7 +80,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/soon"
                   className="text-gray-100 hover:text-yellow-400 transition-colors"
                 >
                   Privacy Policy
@@ -88,7 +88,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/soon"
                   className="text-gray-100 hover:text-yellow-400 transition-colors"
                 >
                   Risk Disclosure

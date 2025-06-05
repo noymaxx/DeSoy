@@ -3,7 +3,6 @@ import HeroSection from "./components/HeroSection"
 import HowItWorksSection from "./components/HowItWorksSection"
 import BenefitsSection from "./components/BenefitsSection"
 import AboutSection from "./components/AboutSection"
-import TechSection from "./components/TechSection"
 import CTASection from "./components/CTASection"
 import Footer from "./components/Footer"
 
@@ -16,7 +15,6 @@ export default function Home() {
         <HowItWorksSection />
         <BenefitsSection />
         <AboutSection />
-        <TechSection />
         <CTASection />
       </main>
       <Footer />
