@@ -15,6 +15,7 @@ export default function Header() {
   const { user, signIn: login, signOut: logout, isLoading: loading, error } = userContext;
 
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
+  const [isRegisteringWithBackend, setIsRegisteringWithBackend] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,27 +33,61 @@ export default function Header() {
   }, [error]);
 
   useEffect(() => {
-    if (user) {
-      console.log("Civic User Object (from userContext.user):", JSON.stringify(user, null, 2));
-      if (userHasWallet(userContext)) {
-        console.log("Embedded Wallet Address:", userContext.ethereum.address);
-      } else {
-        console.log("User does not have an embedded wallet yet.");
+    const registerUserWalletWithBackend = async (address: string) => {
+      if (isRegisteringWithBackend) return; // Prevent multiple calls
+      setIsRegisteringWithBackend(true);
+      console.log(`Attempting to register wallet ${address} with backend...`);
+      try {
+        // Ensure this URL points to your backend.
+        // If client is on 3001 and server on 3000, direct URL is needed or proxy.
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'; 
+        const response = await fetch(`${backendUrl}/api/v1/users/wallet`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ walletAddress: address }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          console.log('Backend response (user processed):', data);
+          // Optional: toast.success(`Wallet ${data.walletAddress} registered/verified.`);
+        } else {
+          console.error('Backend error (processing user):', data);
+          toast.error(data.message || 'Falha ao registrar carteira com o backend.');
+        }
+      } catch (err: any) {
+        console.error('Network error registering wallet with backend:', err);
+        toast.error('Erro de rede ao comunicar com o backend.');
+      } finally {
+        setIsRegisteringWithBackend(false);
       }
+    };
+
+    if (user && userHasWallet(userContext)) {
+      const walletAddress = userContext.ethereum.address;
+      console.log("Civic User Object (from userContext.user):", JSON.stringify(user, null, 2));
+      console.log("Embedded Wallet Address found:", walletAddress);
+      registerUserWalletWithBackend(walletAddress);
+    } else if (user && !userHasWallet(userContext)) {
+      console.log("Civic User Object (from userContext.user):", JSON.stringify(user, null, 2));
+      console.log("User does not have an embedded wallet yet. Wallet creation should be triggered by UI.");
     } else {
       console.log("Civic User Object: null");
     }
-  }, [user, userContext]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps 
+  }, [user, userContext, userHasWallet(userContext)]); // Added userHasWallet(userContext) to deps to re-run when wallet is created
 
   const handleCreateWallet = async () => {
     if (user && !userHasWallet(userContext) && userContext.createWallet) {
       setIsCreatingWallet(true);
       try {
         await userContext.createWallet();
-        toast.success("Carteira embutida criada com sucesso!");
+        toast.success("Carteira embutida Civic criada com sucesso!");
+        // The useEffect above should now pick up the new wallet address and call the backend.
       } catch (err: any) {
-        console.error("Erro ao criar carteira embutida:", err);
-        toast.error(err.message || "Falha ao criar carteira embutida.");
+        console.error("Erro ao criar carteira embutida Civic:", err);
+        toast.error(err.message || "Falha ao criar carteira embutida Civic.");
       }
       setIsCreatingWallet(false);
     }
@@ -83,12 +118,12 @@ export default function Header() {
         return (
           <div className="flex items-center gap-2">
             <div className="hidden lg:flex flex-col text-right text-xs">
-              <span className="text-gray-300">Carteira Embutida:</span>
+              <span className="text-gray-300">Carteira Civic:</span>
               <span className="text-yellow-400 font-semibold" title={displayAddress}>
                 {shortAddress}
               </span>
             </div>
-            <Button 
+            <Button
               onClick={handleWalletAction}
               variant="outline"
               className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
@@ -108,20 +143,21 @@ export default function Header() {
       } else {
         return (
           <div className="flex items-center gap-2">
-             <div className="hidden lg:flex flex-col text-right text-xs">
+            <div className="hidden lg:flex flex-col text-right text-xs">
               <span className="text-gray-300">Usuário: {user.email || user.id}</span>
               <span className="text-yellow-400 font-semibold">
-                Carteira não criada
+                Carteira Civic não criada
               </span>
             </div>
-            <Button 
+            <Button
               onClick={handleCreateWallet}
               className="bg-green-500 hover:bg-green-600 text-black font-semibold mr-2"
+              disabled={isCreatingWallet || userContext.walletCreationInProgress}
             >
               <PlusCircle className="w-4 h-4 mr-2" />
-              Criar Carteira Embutida
+              Criar Carteira Civic
             </Button>
-            <Button 
+            <Button
               onClick={handleWalletAction}
               variant="outline"
               className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black"
@@ -135,7 +171,7 @@ export default function Header() {
     }
 
     return (
-      <Button 
+      <Button
         className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
         onClick={handleWalletAction}
       >
