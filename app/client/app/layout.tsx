@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { CivicAuthProvider } from "@civic/auth-web3/react"
 import { Toaster } from "@/components/ui/sonner"
+import { WalletProvider } from "@/lib/contexts/WalletContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -25,8 +26,10 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <body className={inter.className}>
         <CivicAuthProvider clientId={civicClientId}>
-          {children}
-          <Toaster />
+          <WalletProvider>
+            {children}
+            <Toaster />
+          </WalletProvider>
         </CivicAuthProvider>
       </body>
     </html>

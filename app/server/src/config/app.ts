@@ -6,8 +6,17 @@ import { errorHandler } from "../utils/errorHandler";
 
 const app = express();
 
+// CORS configuration - Fix CORS error by allowing frontend origin
+const corsOptions = {
+  origin: [
+    '*',
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
