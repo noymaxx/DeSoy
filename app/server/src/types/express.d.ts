@@ -1,8 +1,9 @@
-declare namespace Express {
-  export interface Request {
-    user?: {
-      id: string;
-      [key: string]: any;
-    };
+import 'express';
+
+declare global {
+  namespace Express {
+    export interface Request {
+      walletAddress?: string;
+    }
   }
 } 

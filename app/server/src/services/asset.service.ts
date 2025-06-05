@@ -1,8 +1,8 @@
 import { Repository } from 'typeorm';
 import { AppDataSource } from '../config/database/data-source';
-import { Asset } from '../entities/Asset.entity';
+import { Asset } from '../entities/Crop.entity';
 import { AssetUpdate } from '../entities/AssetUpdate.entity';
-import { AssetStatus } from '../entities/enums/AssetEnums';
+import { CropStatus } from '../entities/enums/CropEnums';
 import { createError } from '../utils/errorHandler';
 
 export class AssetService {
@@ -18,7 +18,7 @@ export class AssetService {
     try {
       const asset = this.assetRepository.create({
         ...data,
-        status: AssetStatus.PENDING,
+        status: CropStatus.PENDING,
         fundedAmount: 0,
         fundedPercentage: 0
       });
@@ -58,7 +58,7 @@ export class AssetService {
     }
   }
 
-  async updateAssetStatus(id: string, status: AssetStatus, updateData: Record<string, any>): Promise<{ asset: Asset; update: AssetUpdate }> {
+  async updateAssetStatus(id: string, status: CropStatus, updateData: Record<string, any>): Promise<{ asset: Asset; update: AssetUpdate }> {
     try {
       const asset = await this.getAssetById(id);
       
@@ -78,7 +78,7 @@ export class AssetService {
   }
 
   async listAssets(filters: {
-    status?: AssetStatus;
+    status?: CropStatus;
     producerId?: string;
     minFundedPercentage?: number;
   }): Promise<Asset[]> {

@@ -3,7 +3,7 @@ import { IsEmail, MinLength } from 'class-validator';
 import { Exclude } from 'class-transformer';
 import { BaseEntity } from './base/BaseEntity';
 import { UserRole, UserStatus, VerificationStatus } from './enums/UserEnums';
-import { Asset } from '../entities/Asset.entity';
+import { Asset } from './Crop.entity';
 import { Investment } from '../entities/Investment.entity';
 import { Transaction } from '../entities/Transaction.entity';
 

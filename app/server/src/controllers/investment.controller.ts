@@ -7,7 +7,7 @@ const investmentService = new InvestmentService();
 
 export class InvestmentController {
   createInvestment = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const investorId = req.user?.id;
+    const investorId = req.body.walletAddress as string;
     
     if (!investorId) {
       throw createError('Unauthorized', 403);
@@ -27,16 +27,16 @@ export class InvestmentController {
 
   getInvestmentById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const userId = req.user?.id;
+    const investorId = req.body.walletAddress as string;
     
-    if (!userId) {
+    if (!investorId) {
       throw createError('Unauthorized', 403);
     }
     
     const investment = await investmentService.getInvestmentById(id);
     
     // Check if user is the investor or the asset producer
-    if (investment.investorId !== userId && investment.asset.producerId !== userId) {
+    if (investment.investorId !== investorId && investment.asset.producerId !== investorId) {
       throw createError('Unauthorized', 403);
     }
     
@@ -49,7 +49,7 @@ export class InvestmentController {
 
   updateInvestment = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const investorId = req.user?.id;
+    const investorId = req.body.walletAddress as string;
     
     if (!investorId) {
       throw createError('Unauthorized', 403);
@@ -72,7 +72,7 @@ export class InvestmentController {
   });
 
   listInvestments = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const userId = req.user?.id;
+    const userId = req.body.walletAddress as string;
     
     if (!userId) {
       throw createError('Unauthorized', 403);
@@ -94,7 +94,7 @@ export class InvestmentController {
 
   deleteInvestment = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const investorId = req.user?.id;
+    const investorId = req.body.walletAddress as string;
     
     if (!investorId) {
       throw createError('Unauthorized', 403);

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -22,11 +23,16 @@ import {
 } from "lucide-react";
 
 interface TokenizeData {
-  cropType: string;
-  plantedArea: string;
-  expectedRevenue: string;
-  harvestDate: string;
-  location: string;
+  assetType: string;
+  quantity: string;
+  pricePerUnit: string;
+  expectedHarvestDate: string;
+  expectedDeliveryDate: string;
+  location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  };
   description: string;
 }
 
@@ -50,8 +56,8 @@ export default function TokenizeConfirmationModal({
 
   const platformFee = 2.5;
   const interestRate = 8.5;
-  const maxValue = formData.expectedRevenue
-    ? (Number.parseFloat(formData.expectedRevenue) * 0.7).toFixed(0)
+  const maxValue = formData.pricePerUnit ? 
+    (Number.parseFloat(formData.pricePerUnit) * Number.parseFloat(formData.quantity || "0") * 0.7).toFixed(0) 
     : "0";
 
   const handleConfirm = async () => {
@@ -113,7 +119,7 @@ export default function TokenizeConfirmationModal({
                   Project Published!
                 </h3>
                 <p className="text-gray-300 mb-4">
-                  Your {formData.cropType} project has been successfully
+                  Your {formData.assetType} project has been successfully
                   tokenized and is now available for investment.
                 </p>
                 <p className="text-sm text-gray-400">
@@ -150,53 +156,51 @@ export default function TokenizeConfirmationModal({
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                       <div className="space-y-3">
                         <div>
-                          <p className="text-gray-400">Crop Type</p>
+                          <p className="text-gray-400">Asset Type</p>
                           <p className="text-white font-semibold capitalize">
-                            {formData.cropType}
+                            {formData.assetType}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400">Planted Area</p>
+                          <p className="text-gray-400">Quantity</p>
                           <p className="text-white font-semibold">
-                            {formData.plantedArea} hectares
+                            {formData.quantity} units
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400">Expected Revenue</p>
+                          <p className="text-gray-400">Price per Unit</p>
                           <p className="text-white font-semibold">
-                            $
-                            {Number.parseFloat(
-                              formData.expectedRevenue || "0"
-                            ).toLocaleString()}{" "}
-                            USDC
+                            ${Number.parseFloat(formData.pricePerUnit || "0").toLocaleString()} USDC
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Total Value</p>
+                          <p className="text-white font-semibold">
+                            ${(Number.parseFloat(formData.pricePerUnit || "0") * Number.parseFloat(formData.quantity || "0")).toLocaleString()} USDC
                           </p>
                         </div>
                       </div>
 
                       <div className="space-y-3">
                         <div>
+                          <p className="text-gray-400">Expected Harvest Date</p>
+                          <p className="text-white font-semibold">
+                            {new Date(formData.expectedHarvestDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Expected Delivery Date</p>
+                          <p className="text-white font-semibold">
+                            {new Date(formData.expectedDeliveryDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div>
                           <p className="text-gray-400">Location</p>
-                          <p className="text-white font-semibold flex items-center">
-                            <MapPin className="w-3 h-3 mr-1" />
-                            {formData.location}
+                          <p className="text-white font-semibold">
+                            {formData.location.address}
                           </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Harvest Date</p>
-                          <p className="text-white font-semibold flex items-center">
-                            <Calendar className="w-3 h-3 mr-1" />
-                            {formData.harvestDate
-                              ? new Date(
-                                  formData.harvestDate
-                                ).toLocaleDateString()
-                              : "Not set"}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Max Funding Available</p>
-                          <p className="text-yellow-400 font-semibold flex items-center">
-                            <DollarSign className="w-3 h-3 mr-1" />${maxValue}{" "}
-                            USDC
+                          <p className="text-gray-400 text-sm">
+                            ({formData.location.latitude}, {formData.location.longitude})
                           </p>
                         </div>
                       </div>
@@ -309,12 +313,41 @@ export default function TokenizeConfirmationModal({
                   </div>
                 </div>
 
-                {isProcessing && (
-                  <div className="text-center text-sm text-gray-400 bg-gray-800/30 rounded-lg p-4">
-                    <p>Creating smart contract and validating documents...</p>
-                    <p>
-                      This may take a few moments to complete on the blockchain.
+                {isProcessing ? (
+                  <div className="text-center py-8">
+                    <Loader2 className="w-12 h-12 text-yellow-400 animate-spin mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      Processing Tokenization
+                    </h3>
+                    <p className="text-gray-400">
+                      Please wait while we process your request...
                     </p>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center">
+                        <div className="bg-yellow-400 rounded-full p-2 mr-3">
+                          <Coins className="w-5 h-5 text-black" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-white">
+                            Tokenization Summary
+                          </h3>
+                          <p className="text-sm text-gray-400">
+                            Review your asset details before proceeding
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <Badge
+                          variant="outline"
+                          className="border-yellow-400 text-yellow-400"
+                        >
+                          {formData.assetType}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
                 )}
               </motion.div>

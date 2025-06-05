@@ -2,21 +2,21 @@ import { Request, Response } from 'express';
 import { AssetService } from '../services/asset.service';
 import { asyncHandler } from '../utils/asyncHandler';
 import { createError } from '../utils/errorHandler';
-import { AssetStatus } from '../entities/enums/AssetEnums';
+import { CropStatus } from '../entities/enums/CropEnums';
 
 const assetService = new AssetService();
 
 export class AssetController {
   createAsset = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const producerId = req.user?.id;
+    const userWalletAddress = req.body.walletAddress as string;
     
-    if (!producerId) {
+    if (!userWalletAddress) {
       throw createError('Unauthorized', 403);
     }
     
     const asset = await assetService.createAsset({
       ...req.body,
-      producerId
+      userWalletAddress
     });
     
     res.status(201).json({
@@ -40,9 +40,9 @@ export class AssetController {
 
   updateAsset = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const producerId = req.user?.id;
+    const userWalletAddress = req.body.walletAddress;
     
-    if (!producerId) {
+    if (!userWalletAddress) {
       throw createError('Unauthorized', 403);
     }
     
@@ -58,13 +58,13 @@ export class AssetController {
   updateAssetStatus = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const { status, updateData } = req.body;
-    const producerId = req.user?.id;
+    const userWalletAddress = req.body.walletAddress as string;
     
-    if (!producerId) {
+    if (!userWalletAddress) {
       throw createError('Unauthorized', 403);
     }
 
-    if (!Object.values(AssetStatus).includes(status)) {
+    if (!Object.values(CropStatus).includes(status)) {
       throw createError('Invalid asset status', 400);
     }
     
@@ -91,9 +91,9 @@ export class AssetController {
 
   deleteAsset = asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const producerId = req.user?.id;
+    const userWalletAddress = req.body.walletAddress as string;
     
-    if (!producerId) {
+    if (!userWalletAddress) {
       throw createError('Unauthorized', 403);
     }
     

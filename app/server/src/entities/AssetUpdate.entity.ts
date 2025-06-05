@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base/BaseEntity';
-import { UpdateType, WeatherEventType } from './enums/AssetEnums';
-import { Asset } from './Asset.entity';
+import { UpdateType, WeatherEventType } from './enums/CropEnums';
+import { Asset } from './Crop.entity';
 
 @Entity('asset_updates')
 export class AssetUpdate extends BaseEntity {

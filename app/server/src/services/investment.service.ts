@@ -1,10 +1,10 @@
 import { Repository } from 'typeorm';
 import { AppDataSource } from '../config/database/data-source';
 import { Investment } from '../entities/Investment.entity';
-import { Asset } from '../entities/Asset.entity';
+import { Asset } from '../entities/Crop.entity';
 import { Transaction } from '../entities/Transaction.entity';
 import { InvestmentStatus } from '../entities/enums/TransactionEnums';
-import { AssetStatus } from '../entities/enums/AssetEnums';
+import { CropStatus } from '../entities/enums/CropEnums';
 import { createError } from '../utils/errorHandler';
 
 export class InvestmentService {
@@ -33,7 +33,7 @@ export class InvestmentService {
         throw createError('Asset not found', 404);
       }
 
-      if (asset.status !== AssetStatus.TOKENIZED) {
+      if (asset.status !== CropStatus.TOKENIZED) {
         throw createError('Asset is not available for investment', 400);
       }
 
@@ -64,9 +64,9 @@ export class InvestmentService {
       asset.fundedPercentage = (asset.fundedAmount / totalValue) * 100;
       
       if (asset.fundedAmount >= totalValue) {
-        asset.status = AssetStatus.FULLY_FUNDED;
+        asset.status = CropStatus.FULLY_FUNDED;
       } else if (asset.fundedAmount > 0) {
-        asset.status = AssetStatus.PARTIALLY_FUNDED;
+        asset.status = CropStatus.PARTIALLY_FUNDED;
       }
 
       await queryRunner.manager.save(asset);
