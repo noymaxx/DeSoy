@@ -1,0 +1,22 @@
+Como funciona a DeSoy
+
+A DeSoy é uma plataforma Web3 que conecta agricultores a investidores, permitindo o financiamento descentralizado de projetos agrícolas por meio da tokenização de recebíveis futuros.
+
+O funcionamento é dividido em 5 etapas principais:
+
+Cadastro do Agricultor:
+Agricultores acessam a plataforma e passam por uma verificação de identidade via Civic Auth, garantindo autenticidade sem abrir mão da privacidade. Após verificados, podem registrar projetos de safra informando cultura, localização, volume esperado e valor necessário para financiamento.
+
+Tokenização do Projeto:
+Cada projeto cadastrado é convertido em um contrato inteligente na Flare Network. Esse contrato representa o recebível agrícola futuro e define as regras do investimento, incluindo valor captado, data estimada de colheita e retorno esperado.
+
+Captação de Investimentos:
+Os projetos tokenizados são listados em um marketplace acessível globalmente. Investidores interessados analisam os projetos, aportam capital e recebem tokens representativos de sua participação. Esses tokens dão direito ao valor investido + rendimento após a colheita.
+
+Acompanhamento:
+Tanto agricultores quanto investidores têm acesso a um dashboard para acompanhar o status dos projetos, o cronograma da safra e os dados relevantes da operação, de forma transparente e em tempo real.
+
+Liquidação Automatizada:
+Quando a data estimada de colheita chega, o contrato inteligente executa a liquidação automática, transferindo os valores devidos aos investidores. Todo o fluxo é programado para reduzir inadimplência e eliminar intermediários.
+
+A DeSoy utiliza a Flare Network pela baixa taxa de transação e suporte nativo a dados externos, essenciais para determinar automaticamente se as condições de liquidação foram cumpridas.
