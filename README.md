@@ -44,15 +44,7 @@ DeSoy delivers:
 - 🌾 Support for global food security
 - 🏘️ Rural economic development
 
-## Useful Links 🔗
-
-- 📊 [Slide Pitch Deck](https://docs.google.com/presentation/d/18HLtpohvjNYOZbBf0H3wo16I6boa27CraDfYS4pZCtg/edit?usp=sharing)
-- 🎥 [Pitch Video](https://www.youtube.com/watch?v=WswJgOI-SC4)
-- 🎬 [Demo Video](https://www.youtube.com/watch?v=Lhz7Z91wetU)
-- 💻 [GitHub Repository](https://github.com/vict0rcarvalh0/eth-belgrade-hackathon)
-- 📚 [Documentation](https://noymaxx.gitbook.io/desoy)
-
-- # 🛠️ How to Run the deSoy Project Locally
+# 🛠️ How to Run the deSoy Project Locally
 
 This guide provides step-by-step instructions to run the **deSoy** decentralized agricultural credit platform locally, including backend, frontend, and database services.
 
@@ -74,5 +66,13 @@ cd app/server
 npm install
 npm run dev
 
+
+## Useful Links 🔗
+
+- 📊 [Slide Pitch Deck](https://docs.google.com/presentation/d/18HLtpohvjNYOZbBf0H3wo16I6boa27CraDfYS4pZCtg/edit?usp=sharing)
+- 🎥 [Pitch Video](https://www.youtube.com/watch?v=WswJgOI-SC4)
+- 🎬 [Demo Video](https://www.youtube.com/watch?v=Lhz7Z91wetU)
+- 💻 [GitHub Repository](https://github.com/vict0rcarvalh0/eth-belgrade-hackathon)
+- 📚 [Documentation](https://noymaxx.gitbook.io/desoy)
 
 <p align="center">Made with ❤️ by the DeSoy team 🚀</p>
