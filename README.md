@@ -65,6 +65,7 @@ This guide provides step-by-step instructions to run the **deSoy** decentralized
 cd app/server
 npm install
 npm run dev
+```
 
 
 ## Useful Links 🔗
