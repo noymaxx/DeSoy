@@ -52,4 +52,27 @@ DeSoy delivers:
 - 💻 [GitHub Repository](https://github.com/vict0rcarvalh0/eth-belgrade-hackathon)
 - 📚 [Documentation](https://noymaxx.gitbook.io/desoy)
 
+- # 🛠️ How to Run the deSoy Project Locally
+
+This guide provides step-by-step instructions to run the **deSoy** decentralized agricultural credit platform locally, including backend, frontend, and database services.
+
+---
+
+## 📦 Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18+ recommended)
+- [PNPM](https://pnpm.io/installation)
+- [Docker & Docker Compose](https://docs.docker.com/get-docker/)
+- Git
+
+---
+
+## 🚀 Backend Setup (`/app/server`)
+
+```bash
+cd app/server
+npm install
+npm run dev
+
+
 <p align="center">Made with ❤️ by the DeSoy team 🚀</p>
